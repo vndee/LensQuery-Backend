@@ -8,6 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+
+	"github.com/vndee/lensquery-backend/pkg/handler"
 )
 
 var (
@@ -36,6 +38,9 @@ func main() {
 	app.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.SendString("OK")
 	})
+
+	// Routes
+	app.Post("/ocr", handler.Image2Text)
 
 	log.Fatal(app.Listen(":" + *port))
 }
