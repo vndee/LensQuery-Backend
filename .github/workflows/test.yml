@@ -24,3 +24,5 @@ jobs:
                   export SERVICE_ACCOUNT_JSON=service_account.json
             - name: Test
               run: go test ./cmd/app/...
+            - name: Cleanup Service Account JSON
+              run: rm service_account.json
