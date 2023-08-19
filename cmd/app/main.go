@@ -22,10 +22,7 @@ var (
 	prod = flag.Bool("prod", false, "Enable prefork in Production")
 )
 
-func main() {
-	flag.Parse()
-	log.Println("Starting server...", *name, *port, *prod)
-
+func Setup() *fiber.App {
 	app := fiber.New(
 		fiber.Config{
 			AppName:     *name,
@@ -63,5 +60,13 @@ func main() {
 	ocr := v1.Group("/ocr")
 	ocr.Get("/get_access_token", handler.GetAppToken)
 
+	return app
+}
+
+func main() {
+	flag.Parse()
+	log.Println("Starting server...", *name, *port, *prod)
+
+	app := Setup()
 	log.Fatal(app.Listen(":" + *port))
 }

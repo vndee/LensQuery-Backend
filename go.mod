@@ -21,6 +21,7 @@ require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -34,9 +35,11 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/qinains/fastergoding v0.0.2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sacsand/gofiber-firebaseauth v1.4.3 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.48.0 // indirect
@@ -56,4 +59,5 @@ require (
 	google.golang.org/genproto v0.0.0-20230320184635-7606e756e683 // indirect
 	google.golang.org/grpc v1.53.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
