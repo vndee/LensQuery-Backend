@@ -14,4 +14,4 @@ RUN go build -o main ./cmd/app/main.go
 
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["./main", "--name=Lensquery-Backend", "--port=8080", "--prod"]
