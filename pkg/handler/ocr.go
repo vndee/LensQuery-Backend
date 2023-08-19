@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -18,51 +16,28 @@ var (
 	MathpixURL = os.Getenv("OCR_URL")
 )
 
-func Image2Text(c *fiber.Ctx) error {
-	log.Println("OCR request received")
-	log.Println("OCR_KEY:", MathpixKey)
-	log.Println("OCR_APP:", MathpixApp)
-	log.Println("OCR_URL:", MathpixURL)
-
-	file, err := c.FormFile("image")
+// Get short-lived access token
+func GetAppToken(c *fiber.Ctx) error {
+	req, err := http.NewRequest("POST", MathpixURL+"/app-tokens", nil)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid file"})
+		log.Printf("Failed to create request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to create request")
 	}
 
-	fileReader, err := file.Open()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error reading file"})
-	}
-	defer fileReader.Close()
-
-	imgBytes, err := ioutil.ReadAll(fileReader)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error reading file"})
-	}
-
-	req, err := http.NewRequest("POST", MathpixURL, bytes.NewReader(imgBytes))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error creating request"})
-	}
-
-	req.Header.Set("app_id", MathpixApp)
 	req.Header.Set("app_key", MathpixKey)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	log.Println("OCR request sent", req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error making request"})
+		log.Printf("Failed to send request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to send request")
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error reading response"})
+		log.Printf("Failed to read response body: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to read response body")
 	}
 
-	var result map[string]interface{}
-	json.Unmarshal(body, &result)
-
-	return c.JSON(result)
+	return c.Status(resp.StatusCode).Send(body)
 }
