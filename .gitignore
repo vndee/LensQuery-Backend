@@ -9,6 +9,7 @@ firebase_creds.json
 *.dll
 *.so
 *.dylib
+main
 
 # Test binary, build with 'go test -c'
 *.test
