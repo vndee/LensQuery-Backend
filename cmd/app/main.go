@@ -39,7 +39,9 @@ func Setup() *fiber.App {
 	// Get google service account credentials
 	serviceAccount, fileExi := os.LookupEnv("SERVICE_ACCOUNT_JSON")
 	if !fileExi {
-		log.Fatal("Please provide valid firebase auth credential json!", serviceAccount, fileExi)
+		log.Fatal("Please provide valid firebase auth credential json!")
+		log.Fatal("serviceAccount:", serviceAccount)
+		log.Fatal("fileExi:", fileExi)
 	}
 
 	// Initialize the firebase app.
