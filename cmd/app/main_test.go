@@ -34,9 +34,9 @@ func TestIndexRoute(t *testing.T) {
 			expectedBody:  "Missing or malformed Token",
 		},
 		{
-			description:   "GET /api/v1/ocr/get_access_token",
+			description:   "GET /api/v1/ocr/token",
 			method:        "GET",
-			path:          "/api/v1/ocr/get_access_token",
+			path:          "/api/v1/ocr/token",
 			expectedCode:  http.StatusBadRequest,
 			expectedError: "",
 			expectedBody:  "Missing or malformed Token",
