@@ -7,6 +7,8 @@ import (
 
 	"log"
 
+	"github.com/bytedance/sonic"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -39,7 +41,19 @@ func GetAppToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to read response body")
 	}
 
-	// Add app_id to the body
-	body = append(body, []byte(`{"app_id": "`+MathpixApp+`"}`)...)
-	return c.Status(resp.StatusCode).Send(body)
+	// parse body to json and add field "app_id"
+	var data map[string]interface{}
+	err = sonic.Unmarshal(body, &data)
+	if err != nil {
+		log.Printf("Failed to parse response body: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to parse response body")
+	}
+	data["app_id"] = MathpixApp
+	response, err := sonic.Marshal(data)
+	if err != nil {
+		log.Printf("Failed to marshal response body: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to marshal response body")
+	}
+
+	return c.Status(resp.StatusCode).Send(response)
 }
