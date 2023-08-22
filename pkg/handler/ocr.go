@@ -39,5 +39,7 @@ func GetAppToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to read response body")
 	}
 
+	// Add app_id to the body
+	body = append(body, []byte(`{"app_id": "`+MathpixApp+`"}`)...)
 	return c.Status(resp.StatusCode).Send(body)
 }
