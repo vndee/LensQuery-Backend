@@ -55,5 +55,7 @@ func GetAppToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to marshal response body")
 	}
 
+	log.Printf("Successfully get app token: %s", response)
+
 	return c.Status(resp.StatusCode).Send(response)
 }
