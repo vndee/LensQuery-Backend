@@ -36,6 +36,9 @@ func Setup() *fiber.App {
 		return c.SendString("OK")
 	})
 
+	app.Get("/terms", handler.GetTermsOfUse)
+	app.Get("/privacy", handler.GetPrivacyPolicy)
+
 	// Get google service account credentials
 	serviceAccount, fileExi := os.LookupEnv("SERVICE_ACCOUNT_JSON")
 	if !fileExi {
@@ -61,10 +64,6 @@ func Setup() *fiber.App {
 
 	ocr := v1.Group("/ocr")
 	ocr.Get("/token", handler.GetAppToken)
-
-	docs := v1.Group("/docs")
-	docs.Get("/terms", handler.GetTermsOfUse)
-	docs.Get("/privacy", handler.GetPrivacyPolicy)
 
 	return app
 }
