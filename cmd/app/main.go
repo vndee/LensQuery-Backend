@@ -62,6 +62,10 @@ func Setup() *fiber.App {
 	ocr := v1.Group("/ocr")
 	ocr.Get("/token", handler.GetAppToken)
 
+	docs := v1.Group("/docs")
+	docs.Get("/terms", handler.GetTermsOfUse)
+	docs.Get("/privacy", handler.GetPrivacyPolicy)
+
 	return app
 }
 
