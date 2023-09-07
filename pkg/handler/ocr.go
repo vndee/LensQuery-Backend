@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
@@ -234,14 +235,32 @@ func GetEquationTextContent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
 	}
 
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", file.Filename)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
+	}
+	part.Write(imgBytes)
+
+	err = writer.WriteField("options_json", string(optionsJSON))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
+	}
+
 	// Set up the request to Mathpix API
-	req, err := http.NewRequest("POST", MathpixURL, bytes.NewReader(imgBytes))
+	req, err := http.NewRequest("POST", MathpixURL+"/text", body)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}
 	req.Header.Set("app_id", MathpixApp)
 	req.Header.Set("app_key", MathpixKey)
-	req.Header.Set("options_json", string(optionsJSON))
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	client := &http.Client{}
 	response, err := client.Do(req)
@@ -250,5 +269,16 @@ func GetEquationTextContent(c *fiber.Ctx) error {
 	}
 	defer response.Body.Close()
 
-	return c.Status(response.StatusCode).JSON(response.Body)
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
+	}
+
+	var responseData map[string]interface{}
+	err = sonic.Unmarshal(responseBody, &responseData)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
+	}
+
+	return c.Status(response.StatusCode).JSON(responseData)
 }

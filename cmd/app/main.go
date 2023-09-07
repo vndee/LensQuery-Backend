@@ -41,7 +41,7 @@ func Setup() *fiber.App {
 	app.Get("/privacy", handler.GetPrivacyPolicy)
 
 	// Get google service account credentials
-	serviceAccount, fileExi := os.LookupEnv("SERVICE_ACCOUNT_JSON")
+	serviceAccount, fileExi := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
 	if !fileExi {
 		log.Fatal("Please provide valid firebase auth credential json!")
 		log.Fatal("serviceAccount:", serviceAccount)
