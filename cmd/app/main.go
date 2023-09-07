@@ -63,7 +63,18 @@ func Setup() *fiber.App {
 	v1 := app.Group("/api/v1")
 
 	ocr := v1.Group("/ocr")
-	ocr.Get("/token", handler.GetAppToken)
+	ocr.Get("/get_equation_token", handler.GetEquationOCRAppToken)
+	ocr.Post("/get_free_text", handler.GetFreeTextContent)
+	ocr.Post("/get_document_text", handler.GetDocumentTextContent)
+	ocr.Post("/get_equation_text", handler.GetEquationTextContent)
+
+	sub := v1.Group("/subscription")
+	sub.Post("/verify_receipt_android", handler.VerifyReceiptAndroid)
+	sub.Post("/verify_receipt_ios", handler.VerifyReceiptIOS)
+	sub.Get("/get_subscription_plan", handler.GetSubscriptionPlan)
+	sub.Get("/get_user_subscription", handler.GetUserSubscription)
+	sub.Get("/get_user_remain_snap", handler.GetUserRemainSnap)
+	sub.Get("/do_decrease_snap_credit", handler.DoDecreaseSnapCredit)
 
 	return app
 }

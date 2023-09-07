@@ -19,7 +19,7 @@ var (
 )
 
 // Get short-lived access token
-func GetAppToken(c *fiber.Ctx) error {
+func GetEquationOCRAppToken(c *fiber.Ctx) error {
 	req, err := http.NewRequest("POST", MathpixURL+"/app-tokens", nil)
 	if err != nil {
 		log.Printf("Failed to create request: %v", err)
@@ -58,4 +58,16 @@ func GetAppToken(c *fiber.Ctx) error {
 	log.Printf("Successfully get app token: %s", response)
 
 	return c.Status(resp.StatusCode).Send(response)
+}
+
+func GetFreeTextContent(c *fiber.Ctx) error {
+	return c.SendString("Hello, W orld from FreeText APIs 👋!")
+}
+
+func GetDocumentTextContent(c *fiber.Ctx) error {
+	return c.SendString("Hello, World from DocumentText APIs 👋!")
+}
+
+func GetEquationTextContent(c *fiber.Ctx) error {
+	return c.SendString("Hello, World from EquationText APIs 👋!")
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func GetTermsOfUse(c *fiber.Ctx) error {
-	content, err := ioutil.ReadFile("assets/terms.html")
+	content, err := ioutil.ReadFile("public/terms.html")
 	if err != nil {
 		return err
 	}
@@ -16,7 +16,7 @@ func GetTermsOfUse(c *fiber.Ctx) error {
 }
 
 func GetPrivacyPolicy(c *fiber.Ctx) error {
-	content, err := ioutil.ReadFile("assets/privacy.html")
+	content, err := ioutil.ReadFile("public/privacy.html")
 	if err != nil {
 		return err
 	}
