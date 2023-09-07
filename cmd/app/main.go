@@ -14,7 +14,6 @@ import (
 	gofiberfirebaseauth "github.com/sacsand/gofiber-firebaseauth"
 	"github.com/vndee/lensquery-backend/pkg/handler"
 	"github.com/vndee/lensquery-backend/pkg/repository"
-	"google.golang.org/api/option"
 )
 
 var (
@@ -49,8 +48,8 @@ func Setup() *fiber.App {
 	}
 
 	// Initialize the firebase app.
-	opt := option.WithCredentialsFile(serviceAccount)
-	fireApp, _ := firebase.NewApp(context.Background(), nil, opt)
+	// opt := option.WithCredentialsFile(serviceAccount)
+	fireApp, _ := firebase.NewApp(context.Background(), nil)
 
 	// Initialize the Google Cloud Vision client.
 	err := repository.GCVClient.Init()
