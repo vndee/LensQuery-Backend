@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"os"
 
 	firebase "firebase.google.com/go"
 	"github.com/bytedance/sonic"
@@ -40,12 +39,12 @@ func Setup() *fiber.App {
 	app.Get("/privacy", handler.GetPrivacyPolicy)
 
 	// Get google service account credentials
-	serviceAccount, fileExi := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
-	if !fileExi {
-		log.Fatal("Please provide valid firebase auth credential json!")
-		log.Fatal("serviceAccount:", serviceAccount)
-		log.Fatal("fileExi:", fileExi)
-	}
+	// serviceAccount, fileExi := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
+	// if !fileExi {
+	// 	log.Fatal("Please provide valid firebase auth credential json!")
+	// 	log.Fatal("serviceAccount:", serviceAccount)
+	// 	log.Fatal("fileExi:", fileExi)
+	// }
 
 	// Initialize the firebase app.
 	// opt := option.WithCredentialsFile(serviceAccount)
