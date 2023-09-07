@@ -1,6 +1,10 @@
 package handler
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/vndee/lensquery-backend/pkg/database"
+	"github.com/vndee/lensquery-backend/pkg/model"
+)
 
 func VerifyReceiptAndroid(c *fiber.Ctx) error {
 	return c.SendString("OK")
@@ -11,17 +15,15 @@ func VerifyReceiptIOS(c *fiber.Ctx) error {
 }
 
 func GetSubscriptionPlan(c *fiber.Ctx) error {
-	return c.SendString("OK")
+	subcriptions := []model.SubcriptionPlan{}
+	database.DB.DB.Find(&subcriptions)
+
+	return c.Status(fiber.StatusOK).JSON(subcriptions)
 }
 
 func GetUserSubscription(c *fiber.Ctx) error {
-	return c.SendString("OK")
-}
+	subcription := model.UserSubscription{}
+	database.DB.DB.Where("user_id = ?", c.Locals("user_id")).First(&subcription)
 
-func GetUserRemainSnap(c *fiber.Ctx) error {
-	return c.SendString("OK")
-}
-
-func DoDecreaseSnapCredit(c *fiber.Ctx) error {
-	return c.SendString("OK")
+	return c.Status(fiber.StatusOK).JSON(subcription)
 }

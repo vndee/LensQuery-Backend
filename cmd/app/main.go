@@ -38,16 +38,7 @@ func Setup() *fiber.App {
 	app.Get("/terms", handler.GetTermsOfUse)
 	app.Get("/privacy", handler.GetPrivacyPolicy)
 
-	// Get google service account credentials
-	// serviceAccount, fileExi := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
-	// if !fileExi {
-	// 	log.Fatal("Please provide valid firebase auth credential json!")
-	// 	log.Fatal("serviceAccount:", serviceAccount)
-	// 	log.Fatal("fileExi:", fileExi)
-	// }
-
 	// Initialize the firebase app.
-	// opt := option.WithCredentialsFile(serviceAccount)
 	fireApp, _ := firebase.NewApp(context.Background(), nil)
 
 	// Initialize the Google Cloud Vision client.
@@ -78,8 +69,10 @@ func Setup() *fiber.App {
 	sub.Post("/verify_receipt_ios", handler.VerifyReceiptIOS)
 	sub.Get("/get_subscription_plan", handler.GetSubscriptionPlan)
 	sub.Get("/get_user_subscription", handler.GetUserSubscription)
-	sub.Get("/get_user_remain_snap", handler.GetUserRemainSnap)
-	sub.Get("/do_decrease_snap_credit", handler.DoDecreaseSnapCredit)
+
+	cre := v1.Group("/credit")
+	cre.Get("/get_user_remain_credit", handler.GetUserRemainCredits)
+	cre.Get("/do_decrease_credit", handler.DoDecreaseCredits)
 
 	return app
 }
