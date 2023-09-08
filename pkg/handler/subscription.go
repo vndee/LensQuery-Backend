@@ -16,14 +16,14 @@ func VerifyReceiptIOS(c *fiber.Ctx) error {
 
 func GetSubscriptionPlan(c *fiber.Ctx) error {
 	subcriptions := []model.SubcriptionPlan{}
-	database.DB.DB.Find(&subcriptions)
+	database.Pool.Find(&subcriptions)
 
 	return c.Status(fiber.StatusOK).JSON(subcriptions)
 }
 
 func GetUserSubscription(c *fiber.Ctx) error {
 	subcription := model.UserSubscription{}
-	database.DB.DB.Where("user_id = ?", c.Locals("user_id")).First(&subcription)
+	database.Pool.Where("user_id = ?", c.Locals("user_id")).First(&subcription)
 
 	return c.Status(fiber.StatusOK).JSON(subcription)
 }

@@ -1,13 +1,21 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type UserCredits struct {
+	gorm.Model
+
 	UserID  string  `json:"user_id"`
 	Credits float64 `json:"credits"`
 }
 
 type CreditUsageHistory struct {
+	gorm.Model
+
 	ID          string    `json:"id"`
 	UserID      string    `json:"user_id"`
 	Amount      float64   `json:"amount"`

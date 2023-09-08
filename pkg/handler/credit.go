@@ -9,13 +9,15 @@ import (
 
 func GetUserRemainCredits(c *fiber.Ctx) error {
 	credits := model.UserCredits{}
-	database.DB.DB.Where("user_id = ?", c.Locals("user_id")).First(&credits)
+	database.Pool.Where("user_id = ?", c.Locals("user_id")).First(&credits)
+
 	return c.Status(fiber.StatusOK).JSON(credits)
 }
 
 func DoDecreaseCredits(c *fiber.Ctx) error {
 	// Update remain credits by -1
-	database.DB.DB.Model(&model.UserCredits{}).Where("user_id = ?", c.Locals("user_id")).Update("remain_credits", gorm.Expr("remain_credits - ?", 1))
+	database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", c.Locals("user_id")).Update("remain_credits", gorm.Expr("remain_credits - ?", 1))
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "OK",
 	})

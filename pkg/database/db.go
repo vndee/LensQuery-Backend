@@ -8,54 +8,14 @@ import (
 
 	"cloud.google.com/go/cloudsqlconn"
 	"cloud.google.com/go/cloudsqlconn/postgres/pgxv4"
-	"github.com/vndee/lensquery-backend/pkg/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
-type DBInstance struct {
-	DB *gorm.DB
-}
-
-var DB *DBInstance
-var database *sql.DB
-
-func Connect() error {
-	mustGetenv := func(k string) string {
-		v := os.Getenv(k)
-		if v == "" {
-			log.Fatalf("Missing required environment variable %s", k)
-		}
-		return v
-	}
-
-	var (
-		dbUser = mustGetenv("DB_USER")
-		dbPwd  = mustGetenv("DB_PASS")
-		dbHost = mustGetenv("DB_HOST")
-		dbPort = mustGetenv("DB_PORT")
-		dbName = mustGetenv("DB_NAME")
-	)
-
-	dbURI := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", dbHost, dbUser, dbPwd, dbName, dbPort)
-
-	dbPool, err := gorm.Open(postgres.Open(dbURI), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-	if err != nil {
-		return fmt.Errorf("sql.Open: %v", err)
-	}
-	dbPool.AutoMigrate(&model.UserCredits{}, &model.UserSubscription{}, &model.SubcriptionPlan{}, &model.CreditUsageHistory{})
-
-	DB = &DBInstance{
-		DB: dbPool,
-	}
-	return nil
-}
+var Pool *gorm.DB
 
 func GetCloudSQLDB() (func() error, error) {
-	if database != nil {
+	if Pool != nil {
 		return nil, nil
 	}
 	cleanup, err := pgxv4.RegisterDriver("cloudsql-postgres", cloudsqlconn.WithIAMAuthN())
@@ -68,11 +28,24 @@ func GetCloudSQLDB() (func() error, error) {
 		log.Fatalf("Error on sql.Open: %v", err)
 	}
 
-	database = db
-
 	// Ping to make sure the database is accessible and works.
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Error on db.Ping: %v", err)
+	}
+
+	dbPool, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+
+	if err != nil {
+		log.Fatalf("Error on gorm.Open: %v", err)
+	}
+
+	Pool = dbPool
+
+	// check if the database is accessible
+	if err := Pool.Exec("SELECT 1").Error; err != nil {
+		log.Fatalf("Error on pool.Exec: %v", err)
 	}
 
 	log.Println("Connected to Cloud SQL")
