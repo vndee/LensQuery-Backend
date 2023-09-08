@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	gofiberfirebaseauth "github.com/sacsand/gofiber-firebaseauth"
+	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/handler"
 )
 
@@ -29,6 +30,12 @@ func Setup() *fiber.App {
 			JSONDecoder: sonic.Unmarshal,
 		},
 	)
+
+	cleanup, err := database.GetCloudSQLDB()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer cleanup()
 
 	app.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.SendString("OK")
