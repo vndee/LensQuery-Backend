@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 
+	firebase "firebase.google.com/go"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	gofiberfirebaseauth "github.com/sacsand/gofiber-firebaseauth"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/handler"
 )
@@ -42,15 +45,15 @@ func Setup() *fiber.App {
 	app.Get("/privacy", handler.GetPrivacyPolicy)
 
 	// Initialize the firebase app.
-	// fireApp, _ := firebase.NewApp(context.Background(), nil)
+	fireApp, _ := firebase.NewApp(context.Background(), nil)
 
 	// Middlewares
 	app.Use(recover.New())
 	app.Use(logger.New())
-	// app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
-	// 	FirebaseApp: fireApp,
-	// 	IgnoreUrls:  []string{},
-	// }))
+	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
+		FirebaseApp: fireApp,
+		IgnoreUrls:  []string{},
+	}))
 
 	// Routes
 	v1 := app.Group("/api/v1")
