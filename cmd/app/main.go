@@ -47,6 +47,12 @@ func Setup() *fiber.App {
 	// Initialize the firebase app.
 	fireApp, _ := firebase.NewApp(context.Background(), nil)
 
+	// Check if the firebase app is initialized properly.
+	_, err = fireApp.Auth(context.Background())
+	if err != nil {
+		log.Fatalf("error getting Auth client: %v\n", err)
+	}
+
 	// Middlewares
 	app.Use(recover.New())
 	app.Use(logger.New())
