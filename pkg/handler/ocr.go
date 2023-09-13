@@ -22,6 +22,7 @@ var (
 	MathpixURL = os.Getenv("OCR_URL")
 )
 
+const NUM_LABELS = 5
 const INTERNAL_SERVER_ERROR = "Internal Server Error"
 
 // Get short-lived access token
@@ -113,7 +114,7 @@ func GetFreeTextContent(c *fiber.Ctx) error {
 		}
 	}
 
-	labels, err := client.DetectLabels(ctx, image, nil, 10)
+	labels, err := client.DetectLabels(ctx, image, nil, NUM_LABELS)
 	if err != nil {
 		log.Printf("Failed to detect labels: %v", err)
 		results["labels"] = []string{}
@@ -179,7 +180,7 @@ func GetDocumentTextContent(c *fiber.Ctx) error {
 		}
 	}
 
-	labels, err := client.DetectLabels(ctx, image, nil, 10)
+	labels, err := client.DetectLabels(ctx, image, nil, NUM_LABELS)
 	if err != nil {
 		log.Printf("Failed to detect labels: %v", err)
 		results["labels"] = []string{}
