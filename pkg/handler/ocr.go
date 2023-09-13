@@ -7,7 +7,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"strings"
 
 	"log"
 
@@ -98,25 +97,43 @@ func GetFreeTextContent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to create image from request body")
 	}
 
+	results := make(map[string]interface{})
+
 	annotations, err := client.DetectTexts(ctx, image, nil, 10)
 	if err != nil {
 		log.Printf("Failed to detect texts: %v", err)
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to detect texts")
-	}
-
-	if len(annotations) == 0 {
-		log.Printf("No text found")
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "NO_TEXT_FOUND"})
+		results["text"] = ""
 	} else {
-		log.Printf("Found %d text(s)", len(annotations))
-		var annotationDescription []string
-		for _, annotation := range annotations {
-			log.Printf("Text: %q", annotation.Description)
-			annotationDescription = append(annotationDescription, annotation.Description)
+		if len(annotations) == 0 {
+			log.Printf("No text found")
+			results["text"] = ""
+		} else {
+			log.Printf("Found %d text(s)", len(annotations)-1)
+			results["text"] = annotations[0].Description
 		}
-
-		return c.Status(fiber.StatusOK).JSON(annotationDescription)
 	}
+
+	labels, err := client.DetectLabels(ctx, image, nil, 10)
+	if err != nil {
+		log.Printf("Failed to detect labels: %v", err)
+		results["labels"] = ""
+	} else {
+		if len(labels) == 0 {
+			log.Printf("No label found")
+			results["labels"] = ""
+		} else {
+			log.Printf("Found %d labels:", len(labels))
+
+			var labelDescription []string
+			for _, annotation := range labels {
+				labelDescription = append(labelDescription, annotation.Description)
+			}
+
+			results["labels"] = labelDescription
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(results)
 }
 
 func GetDocumentTextContent(c *fiber.Ctx) error {
@@ -147,63 +164,41 @@ func GetDocumentTextContent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 
+	results := make(map[string]interface{})
+
 	annotation, err := client.DetectDocumentText(ctx, image, nil)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
-	}
-
-	if annotation == nil {
-		log.Println("No text found")
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "NO_TEXT_FOUND"})
-	}
-
-	results := make(map[string]interface{})
-	results["data"] = annotation.Text
-
-	pages := make([]map[string]interface{}, len(annotation.Pages))
-	for pageIndex, page := range annotation.Pages {
-		pageData := map[string]interface{}{
-			"Confidence": page.Confidence,
-			"Width":      page.Width,
-			"Height":     page.Height,
+	} else {
+		if annotation == nil {
+			log.Println("No text found")
+			results["text"] = ""
+		} else {
+			log.Println("Found text")
+			results["text"] = annotation.Text
 		}
+	}
 
-		blocks := make([]map[string]interface{}, len(page.Blocks))
-		for blockIndex, block := range page.Blocks {
-			blockData := map[string]interface{}{
-				"Confidence": block.Confidence,
-				"BlockType":  block.BlockType,
+	labels, err := client.DetectLabels(ctx, image, nil, 10)
+	if err != nil {
+		log.Printf("Failed to detect labels: %v", err)
+		results["labels"] = ""
+	} else {
+		if len(labels) == 0 {
+			log.Printf("No label found")
+			results["labels"] = ""
+		} else {
+			log.Printf("Found %d labels:", len(labels))
+
+			var labelDescription []string
+			for _, annotation := range labels {
+				labelDescription = append(labelDescription, annotation.Description)
 			}
 
-			paragraphs := make([]map[string]interface{}, len(block.Paragraphs))
-			for paragraphIndex, paragraph := range block.Paragraphs {
-				paragraphData := map[string]interface{}{
-					"Confidence": paragraph.Confidence,
-				}
-
-				words := make([]map[string]interface{}, len(paragraph.Words))
-				for wordIndex, word := range paragraph.Words {
-					symbols := make([]string, len(word.Symbols))
-					for i, s := range word.Symbols {
-						symbols[i] = s.Text
-					}
-					wordText := strings.Join(symbols, "")
-					words[wordIndex] = map[string]interface{}{
-						"Confidence": word.Confidence,
-						"Symbols":    wordText,
-					}
-				}
-				paragraphData["Words"] = words
-				paragraphs[paragraphIndex] = paragraphData
-			}
-			blockData["Paragraphs"] = paragraphs
-			blocks[blockIndex] = blockData
+			results["labels"] = labelDescription
 		}
-		pageData["Blocks"] = blocks
-		pages[pageIndex] = pageData
 	}
 
-	results["pages"] = pages
 	return c.Status(fiber.StatusOK).JSON(results)
 }
 
