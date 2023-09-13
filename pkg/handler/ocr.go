@@ -116,11 +116,11 @@ func GetFreeTextContent(c *fiber.Ctx) error {
 	labels, err := client.DetectLabels(ctx, image, nil, 10)
 	if err != nil {
 		log.Printf("Failed to detect labels: %v", err)
-		results["labels"] = ""
+		results["labels"] = []string{}
 	} else {
 		if len(labels) == 0 {
 			log.Printf("No label found")
-			results["labels"] = ""
+			results["labels"] = []string{}
 		} else {
 			log.Printf("Found %d labels:", len(labels))
 
@@ -182,11 +182,11 @@ func GetDocumentTextContent(c *fiber.Ctx) error {
 	labels, err := client.DetectLabels(ctx, image, nil, 10)
 	if err != nil {
 		log.Printf("Failed to detect labels: %v", err)
-		results["labels"] = ""
+		results["labels"] = []string{}
 	} else {
 		if len(labels) == 0 {
 			log.Printf("No label found")
-			results["labels"] = ""
+			results["labels"] = []string{}
 		} else {
 			log.Printf("Found %d labels:", len(labels))
 
