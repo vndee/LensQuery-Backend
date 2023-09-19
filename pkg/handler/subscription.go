@@ -27,3 +27,7 @@ func GetUserSubscription(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(subcription)
 }
+
+func EventHook(c *fiber.Ctx) error {
+	return c.SendString("OK")
+}

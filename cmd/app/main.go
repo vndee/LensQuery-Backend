@@ -41,9 +41,6 @@ func Setup() *fiber.App {
 		return c.SendString("OK")
 	})
 
-	app.Get("/terms", handler.GetTermsOfUse)
-	app.Get("/privacy", handler.GetPrivacyPolicy)
-
 	// Initialize the firebase app.
 	fireApp, _ := firebase.NewApp(context.Background(), nil)
 
@@ -58,10 +55,13 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
 		FirebaseApp: fireApp,
-		IgnoreUrls:  []string{},
+		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook"},
 	}))
 
 	// Routes
+	app.Get("/terms", handler.GetTermsOfUse)
+	app.Get("/privacy", handler.GetPrivacyPolicy)
+
 	v1 := app.Group("/api/v1")
 
 	ocr := v1.Group("/ocr")
@@ -75,6 +75,7 @@ func Setup() *fiber.App {
 	sub.Post("/verify_receipt_ios", handler.VerifyReceiptIOS)
 	sub.Get("/get_subscription_plan", handler.GetSubscriptionPlan)
 	sub.Get("/get_user_subscription", handler.GetUserSubscription)
+	sub.Post("/event_hook", handler.EventHook)
 
 	cre := v1.Group("/credit")
 	cre.Get("/get_user_remain_credit", handler.GetUserRemainCredits)
