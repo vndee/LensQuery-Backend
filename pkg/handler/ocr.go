@@ -13,6 +13,7 @@ import (
 	vision "cloud.google.com/go/vision/apiv1"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
+	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/model"
 )
 
@@ -67,6 +68,12 @@ func GetEquationOCRAppToken(c *fiber.Ctx) error {
 }
 
 func GetFreeTextContent(c *fiber.Ctx) error {
+	// Check if user has enough credits
+	if !checkAvailableSnapCredits(c.Locals("user_id").(uint), "text") {
+		log.Printf("User has not enough credits")
+		return c.Status(fiber.StatusPaymentRequired).SendString("Not enough credits")
+	}
+
 	// Get image from request body
 	file, err := c.FormFile("image")
 	if err != nil {
@@ -134,10 +141,17 @@ func GetFreeTextContent(c *fiber.Ctx) error {
 		}
 	}
 
+	doDecreaseSnapCredits(c.Locals("user_id").(uint), "text")
 	return c.Status(fiber.StatusOK).JSON(results)
 }
 
 func GetDocumentTextContent(c *fiber.Ctx) error {
+	// Check if user has enough credits
+	if !checkAvailableSnapCredits(c.Locals("user_id").(uint), "text") {
+		log.Printf("User has not enough credits")
+		return c.Status(fiber.StatusPaymentRequired).SendString("Not enough credits")
+	}
+
 	file, err := c.FormFile("image")
 	if err != nil {
 		log.Println("Image is required")
@@ -200,10 +214,17 @@ func GetDocumentTextContent(c *fiber.Ctx) error {
 		}
 	}
 
+	doDecreaseSnapCredits(c.Locals("user_id").(uint), "text")
 	return c.Status(fiber.StatusOK).JSON(results)
 }
 
 func GetEquationTextContent(c *fiber.Ctx) error {
+	// Check if user has enough credits
+	if !checkAvailableSnapCredits(c.Locals("user_id").(uint), "equation") {
+		log.Printf("User has not enough credits")
+		return c.Status(fiber.StatusPaymentRequired).SendString("Not enough credits")
+	}
+
 	file, err := c.FormFile("image")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Image is required")
@@ -276,5 +297,32 @@ func GetEquationTextContent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
 	}
 
+	doDecreaseSnapCredits(c.Locals("user_id").(uint), "equation")
 	return c.Status(response.StatusCode).JSON(responseData)
+}
+
+func checkAvailableSnapCredits(userID uint, snapType string) bool {
+	var userCredits model.UserCredits
+	database.Pool.Where("user_id = ?", userID).First(&userCredits)
+
+	switch snapType {
+	case "equation":
+		return userCredits.RemainEquationSnap > 0
+	case "text":
+		return userCredits.RemainTextSnap > 0
+	default:
+		return false
+	}
+}
+
+func doDecreaseSnapCredits(userID uint, snapType string) {
+	var userCredits model.UserCredits
+	database.Pool.Where("user_id = ?", userID).First(&userCredits)
+
+	switch snapType {
+	case "equation":
+		database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", userID).Update("remain_equation_snap", userCredits.RemainEquationSnap-1)
+	case "text":
+		database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", userID).Update("remain_text_snap", userCredits.RemainTextSnap-1)
+	}
 }

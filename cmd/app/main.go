@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	gofiberfirebaseauth "github.com/sacsand/gofiber-firebaseauth"
+	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/handler"
 )
@@ -36,6 +37,11 @@ func Setup() *fiber.App {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer cleanup()
+
+	err = config.LoadSubscriptionPlanConfig()
+	if err != nil {
+		log.Fatalf("Failed to load subscription plan config: %v", err)
+	}
 
 	app.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.SendString("OK")
@@ -71,15 +77,10 @@ func Setup() *fiber.App {
 	ocr.Post("/get_equation_text", handler.GetEquationTextContent)
 
 	sub := v1.Group("/subscription")
-	sub.Post("/verify_receipt_android", handler.VerifyReceiptAndroid)
-	sub.Post("/verify_receipt_ios", handler.VerifyReceiptIOS)
-	sub.Get("/get_subscription_plan", handler.GetSubscriptionPlan)
-	sub.Get("/get_user_subscription", handler.GetUserSubscription)
 	sub.Post("/event_hook", handler.EventHook)
 
 	cre := v1.Group("/credit")
 	cre.Get("/get_user_remain_credit", handler.GetUserRemainCredits)
-	cre.Get("/do_decrease_credit", handler.DoDecreaseCredits)
 
 	return app
 }
