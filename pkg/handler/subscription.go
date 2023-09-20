@@ -8,32 +8,87 @@ import (
 	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/model"
+	"gorm.io/gorm"
 )
 
 func handleTestEvent(event *model.Event) {
 
 }
 
-func handleInitialPurchaseEvent(event *model.Event) *model.UserCredits {
-	log.Println("Purchased plan:", config.PlanConfigs[event.ProductID])
+func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) {
+	plan := config.PlanConfigs[event.ProductID]
+	log.Println("Purchased plan:", plan)
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
 		PurchasedTimestampMs: event.PurchasedAtMs,
 		ExpiredTimestampMs:   event.ExpirationAtMs,
-		AmmountEquationSnap:  config.PlanConfigs[event.ProductID].EquationOCRSnap,
-		RemainEquationSnap:   config.PlanConfigs[event.ProductID].EquationOCRSnap,
-		AmmountTextSnap:      config.PlanConfigs[event.ProductID].TextOCRSnap,
-		RemainTextSnap:       config.PlanConfigs[event.ProductID].TextOCRSnap,
+		AmmountEquationSnap:  plan.EquationOCRSnap,
+		RemainEquationSnap:   plan.EquationOCRSnap,
+		AmmountTextSnap:      plan.TextOCRSnap,
+		RemainTextSnap:       plan.TextOCRSnap,
 	}
 
-	if database.Pool.Where("user_id = ?", event.AppUserID).First(&userCredits).RowsAffected == 0 {
-		database.Pool.Create(&userCredits)
+	var response *gorm.DB
+
+	if database.Pool.Where("user_id = ?", event.AppUserID).First(&model.UserCredits{}).RowsAffected == 0 {
+		response = database.Pool.Create(&userCredits)
 	} else {
-		database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
+		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
-	return &userCredits
+	return &userCredits, processDatabaseResponse(response)
+}
+
+func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
+	plan := config.PlanConfigs[event.ProductID]
+	log.Println("Expired plan:", plan)
+
+	userCredits := model.UserCredits{
+		UserID:               event.AppUserID,
+		PurchasedTimestampMs: event.PurchasedAtMs,
+		ExpiredTimestampMs:   event.ExpirationAtMs,
+		AmmountEquationSnap:  0,
+		RemainEquationSnap:   0,
+		AmmountTextSnap:      0,
+		RemainTextSnap:       0,
+	}
+
+	var response *gorm.DB
+
+	if database.Pool.Where("user_id = ?", event.AppUserID).First(&model.UserCredits{}).RowsAffected == 0 {
+		response = database.Pool.Create(&userCredits)
+	} else {
+		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
+	}
+
+	return &userCredits, processDatabaseResponse(response)
+}
+
+func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
+	plan := config.PlanConfigs[event.ProductID]
+	log.Println("Renewed plan:", plan)
+
+	userCredits := model.UserCredits{
+		UserID:               event.AppUserID,
+		PurchasedTimestampMs: event.PurchasedAtMs,
+		ExpiredTimestampMs:   event.ExpirationAtMs,
+		AmmountEquationSnap:  plan.EquationOCRSnap,
+		RemainEquationSnap:   plan.EquationOCRSnap,
+		AmmountTextSnap:      plan.TextOCRSnap,
+		RemainTextSnap:       plan.TextOCRSnap,
+	}
+
+	log.Println("User credits:", userCredits)
+
+	var response *gorm.DB
+	if database.Pool.Where("user_id = ?", event.AppUserID).First(&model.UserCredits{}).RowsAffected == 0 {
+		response = database.Pool.Create(&userCredits)
+	} else {
+		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
+	}
+
+	return &userCredits, processDatabaseResponse(response)
 }
 
 func EventHook(c *fiber.Ctx) error {
@@ -53,16 +108,18 @@ func EventHook(c *fiber.Ctx) error {
 	}
 
 	event := payload.Event
+	var response *model.UserCredits
+	var err error
+
 	switch event.Type {
 	case "TEST":
 		handleTestEvent(&event)
 
 	case "INITIAL_PURCHASE":
-		response := handleInitialPurchaseEvent(&event)
-		return c.Status(fiber.StatusOK).JSON(response)
+		response, err = handleInitialPurchaseEvent(&event)
 
 	case "RENEWAL":
-		break
+		response, err = handleRenewalEvent(&event)
 
 	case "CANCELLATION":
 		break
@@ -77,7 +134,7 @@ func EventHook(c *fiber.Ctx) error {
 		break
 
 	case "EXPIRATION":
-		break
+		response, err = handleExpirationEvent(&event)
 
 	case "BILLING_ISSUE":
 		break
@@ -89,5 +146,23 @@ func EventHook(c *fiber.Ctx) error {
 		break
 	}
 
-	return c.Status(fiber.StatusOK).JSON(payload)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func processDatabaseResponse(response *gorm.DB) error {
+	if response.Error != nil {
+		return response.Error
+	}
+
+	if response.RowsAffected == 0 {
+		return fiber.ErrNotFound
+	}
+
+	return nil
 }

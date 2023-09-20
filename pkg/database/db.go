@@ -8,6 +8,7 @@ import (
 
 	"cloud.google.com/go/cloudsqlconn"
 	"cloud.google.com/go/cloudsqlconn/postgres/pgxv4"
+	"github.com/vndee/lensquery-backend/pkg/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,7 +23,7 @@ func GetCloudSQLDB() (func() error, error) {
 	if err != nil {
 		log.Fatalf("Error on pgxv4.RegisterDriver: %v", err)
 	}
-	dsn := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable", os.Getenv("DB_INSTANCE_CONNECTION_NAME"), os.Getenv("DB_USER"), os.Getenv("DB_NAME"))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", os.Getenv("DB_INSTANCE_CONNECTION_NAME"), os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"))
 	db, err := sql.Open("cloudsql-postgres", dsn)
 	if err != nil {
 		log.Fatalf("Error on sql.Open: %v", err)
@@ -50,4 +51,9 @@ func GetCloudSQLDB() (func() error, error) {
 
 	log.Println("Connected to Cloud SQL")
 	return cleanup, nil
+}
+
+func CreateTables() {
+	Pool.AutoMigrate(&model.UserCredits{})
+	Pool.AutoMigrate(&model.CreditUsageHistory{})
 }

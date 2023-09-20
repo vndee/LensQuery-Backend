@@ -1,19 +1,19 @@
 {
-	"lq_premium": {
+	"lq_premium_plan": {
 		"CustomLLMProvider": true,
 		"EquationOCRSnap": 180,
 		"FullChatExperience": true,
 		"TextOCRSnap": 1500,
 		"name": "Premium Plan"
 	},
-	"lq_standard": {
+	"lq_standard_plan": {
 		"CustomLLMProvider": true,
 		"EquationOCRSnap": 110,
 		"FullChatExperience": true,
 		"TextOCRSnap": 700,
 		"name": "Standard Plan"
 	},
-	"lq_starter": {
+	"lq_starter_plan": {
 		"CustomLLMProvider": true,
 		"EquationOCRSnap": 50,
 		"FullChatExperience": true,

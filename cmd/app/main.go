@@ -38,6 +38,8 @@ func Setup() *fiber.App {
 	}
 	defer cleanup()
 
+	database.CreateTables()
+
 	err = config.LoadSubscriptionPlanConfig()
 	if err != nil {
 		log.Fatalf("Failed to load subscription plan config: %v", err)

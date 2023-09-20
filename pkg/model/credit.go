@@ -7,9 +7,9 @@ import (
 )
 
 type UserCredits struct {
-	gorm.Model
+	*gorm.Model
 
-	UserID               string `json:"user_id"`
+	UserID               string `json:"user_id" gorm:"primaryKey"`
 	PurchasedTimestampMs int64  `json:"purchased_timestamp_ms"`
 	ExpiredTimestampMs   int64  `json:"expired_timestamp_ms"`
 	AmmountEquationSnap  int    `json:"ammount_equation_snap"`
@@ -21,7 +21,6 @@ type UserCredits struct {
 type CreditUsageHistory struct {
 	gorm.Model
 
-	ID          string    `json:"id"`
 	UserID      string    `json:"user_id"`
 	Amount      float64   `json:"amount"`
 	Timestamp   time.Time `json:"timestamp"`
