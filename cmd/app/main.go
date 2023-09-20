@@ -63,7 +63,7 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
 		FirebaseApp: fireApp,
-		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook", "GET::/api/v1/credit/details"},
+		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook"},
 	}))
 
 	// Routes
