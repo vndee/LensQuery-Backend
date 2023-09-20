@@ -41,9 +41,6 @@ func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) 
 }
 
 func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
-	plan := config.PlanConfigs[event.ProductID]
-	log.Println("Expired plan:", plan)
-
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
 		PurchasedTimestampMs: event.PurchasedAtMs,
@@ -55,12 +52,18 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 	}
 
 	var response *gorm.DB
-
 	if database.Pool.Where("user_id = ?", event.AppUserID).First(&model.UserCredits{}).RowsAffected == 0 {
 		response = database.Pool.Create(&userCredits)
 	} else {
-		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
+		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(map[string]interface{}{
+			"expired_timestamp_ms":  event.ExpirationAtMs,
+			"ammount_equation_snap": 0,
+			"remain_equation_snap":  0,
+			"ammount_text_snap":     0,
+			"remain_text_snap":      0,
+		})
 	}
+	log.Println("Expired plan:", userCredits)
 
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
@@ -78,8 +81,6 @@ func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 		AmmountTextSnap:      plan.TextOCRSnap,
 		RemainTextSnap:       plan.TextOCRSnap,
 	}
-
-	log.Println("User credits:", userCredits)
 
 	var response *gorm.DB
 	if database.Pool.Where("user_id = ?", event.AppUserID).First(&model.UserCredits{}).RowsAffected == 0 {
