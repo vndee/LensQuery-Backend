@@ -8,7 +8,11 @@ import (
 
 func GetUserRemainCredits(c *fiber.Ctx) error {
 	credits := model.UserCredits{}
-	database.Pool.Where("user_id = ?", c.Locals("user_id")).First(&credits)
+	response := database.Pool.Where("user_id = ?", c.Locals("user_id")).First(&credits)
+
+	if err := database.ProcessDatabaseResponse(response); err != nil {
+		return err
+	}
 
 	return c.Status(fiber.StatusOK).JSON(credits)
 }
