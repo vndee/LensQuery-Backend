@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"time"
 
 	"log"
 
@@ -69,8 +70,6 @@ func GetEquationOCRAppToken(c *fiber.Ctx) error {
 }
 
 func GetFreeTextContent(c *fiber.Ctx) error {
-	// log.Println("Get equation text content", c.Locals("user"))
-
 	// Check if user has enough credits
 	if !checkAvailableSnapCredits(c, "text") {
 		log.Printf("User has not enough credits")
@@ -144,7 +143,11 @@ func GetFreeTextContent(c *fiber.Ctx) error {
 		}
 	}
 
-	doDecreaseSnapCredits(c, "text")
+	err = doDecreaseSnapCredits(c, "text")
+	if err != nil {
+		log.Printf("Failed to decrease snap credits: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
 	return c.Status(fiber.StatusOK).JSON(results)
 }
 
@@ -217,7 +220,12 @@ func GetDocumentTextContent(c *fiber.Ctx) error {
 		}
 	}
 
-	doDecreaseSnapCredits(c, "text")
+	err = doDecreaseSnapCredits(c, "text")
+	if err != nil {
+		log.Printf("Failed to decrease snap credits: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+
 	return c.Status(fiber.StatusOK).JSON(results)
 }
 
@@ -300,7 +308,11 @@ func GetEquationTextContent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString(INTERNAL_SERVER_ERROR)
 	}
 
-	doDecreaseSnapCredits(c, "equation")
+	err = doDecreaseSnapCredits(c, "equation")
+	if err != nil {
+		log.Printf("Failed to decrease snap credits: %v", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
 	return c.Status(response.StatusCode).JSON(responseData)
 }
 
@@ -308,7 +320,10 @@ func checkAvailableSnapCredits(c *fiber.Ctx, snapType string) bool {
 	user := c.Locals("user").(gofiberfirebaseauth.User)
 
 	var userCredits model.UserCredits
-	database.Pool.Where("user_id = ?", user.UserID).First(&userCredits)
+	response := database.Pool.Where("user_id = ?", user.UserID).First(&userCredits)
+	if err := database.ProcessDatabaseResponse(response); err != nil {
+		return false
+	}
 
 	switch snapType {
 	case "equation":
@@ -320,16 +335,45 @@ func checkAvailableSnapCredits(c *fiber.Ctx, snapType string) bool {
 	}
 }
 
-func doDecreaseSnapCredits(c *fiber.Ctx, snapType string) {
+func doDecreaseSnapCredits(c *fiber.Ctx, snapType string) error {
 	user := c.Locals("user").(gofiberfirebaseauth.User)
 
 	var userCredits model.UserCredits
-	database.Pool.Where("user_id = ?", user.UserID).First(&userCredits)
+	response := database.Pool.Where("user_id = ?", user.UserID).First(&userCredits)
+	if err := database.ProcessDatabaseResponse(response); err != nil {
+		return err
+	}
 
 	switch snapType {
 	case "equation":
-		database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("remain_equation_snap", userCredits.RemainEquationSnap-1)
+		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("remain_equation_snap", userCredits.RemainEquationSnap-1)
+		if err := database.ProcessDatabaseResponse(response); err != nil {
+			return err
+		}
+
+		return addDecreaseSnapCreditsHistory(c, snapType, 1)
 	case "text":
-		database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("remain_text_snap", userCredits.RemainTextSnap-1)
+		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("remain_text_snap", userCredits.RemainTextSnap-1)
+		if err := database.ProcessDatabaseResponse(response); err != nil {
+			return err
+		}
+
+		return addDecreaseSnapCreditsHistory(c, snapType, 1)
 	}
+
+	return nil
+}
+
+func addDecreaseSnapCreditsHistory(c *fiber.Ctx, snapType string, ammount int) error {
+	user := c.Locals("user").(gofiberfirebaseauth.User)
+
+	var creditHistory model.CreditUsageHistory = model.CreditUsageHistory{
+		UserID:      user.UserID,
+		RequestType: snapType,
+		Amount:      float64(ammount),
+		Timestamp:   time.Now(),
+	}
+
+	response := database.Pool.Create(&creditHistory)
+	return database.ProcessDatabaseResponse(response)
 }

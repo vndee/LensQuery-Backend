@@ -8,6 +8,7 @@ import (
 
 	"cloud.google.com/go/cloudsqlconn"
 	"cloud.google.com/go/cloudsqlconn/postgres/pgxv4"
+	"github.com/gofiber/fiber/v2"
 	"github.com/vndee/lensquery-backend/pkg/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -56,4 +57,16 @@ func GetCloudSQLDB() (func() error, error) {
 func CreateTables() {
 	Pool.AutoMigrate(&model.UserCredits{})
 	Pool.AutoMigrate(&model.CreditUsageHistory{})
+}
+
+func ProcessDatabaseResponse(response *gorm.DB) error {
+	if response.Error != nil {
+		return response.Error
+	}
+
+	if response.RowsAffected == 0 {
+		return fiber.ErrNotFound
+	}
+
+	return nil
 }

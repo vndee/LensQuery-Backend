@@ -37,7 +37,7 @@ func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) 
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
-	return &userCredits, processDatabaseResponse(response)
+	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
 func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
@@ -62,7 +62,7 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
-	return &userCredits, processDatabaseResponse(response)
+	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
 func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
@@ -88,7 +88,7 @@ func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
-	return &userCredits, processDatabaseResponse(response)
+	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
 func EventHook(c *fiber.Ctx) error {
@@ -153,16 +153,4 @@ func EventHook(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
-}
-
-func processDatabaseResponse(response *gorm.DB) error {
-	if response.Error != nil {
-		return response.Error
-	}
-
-	if response.RowsAffected == 0 {
-		return fiber.ErrNotFound
-	}
-
-	return nil
 }
