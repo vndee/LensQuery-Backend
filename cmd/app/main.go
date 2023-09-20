@@ -63,7 +63,7 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
 		FirebaseApp: fireApp,
-		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook"},
+		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook", "GET::/api/v1/credit/details"},
 	}))
 
 	// Routes
@@ -82,7 +82,7 @@ func Setup() *fiber.App {
 	sub.Post("/event_hook", handler.EventHook)
 
 	cre := v1.Group("/credit")
-	cre.Get("/get_user_remain_credit", handler.GetUserRemainCredits)
+	cre.Get("/details", handler.GetUserRemainCredits)
 
 	return app
 }
