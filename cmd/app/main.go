@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 
-	firebase "firebase.google.com/go"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -33,6 +31,8 @@ func Setup() *fiber.App {
 		},
 	)
 
+	config.SetupFirebase()
+
 	cleanup, err := database.GetCloudSQLDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -55,20 +55,11 @@ func Setup() *fiber.App {
 		return c.SendString("OK")
 	})
 
-	// Initialize the firebase app.
-	fireApp, _ := firebase.NewApp(context.Background(), nil)
-
-	// Check if the firebase app is initialized properly.
-	_, err = fireApp.Auth(context.Background())
-	if err != nil {
-		log.Fatalf("error getting Auth client: %v\n", err)
-	}
-
 	// Middlewares
 	app.Use(recover.New())
 	app.Use(logger.New())
 	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
-		FirebaseApp: fireApp,
+		FirebaseApp: config.FirebaseApp,
 		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook", "GET::/api/v1/email/send"},
 	}))
 

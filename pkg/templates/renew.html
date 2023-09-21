@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
     <style>
@@ -10,7 +9,13 @@
             border: 1px solid #dcdcdc;
             background-color: #f7f7f7;
         }
-        .header, .footer {
+        .header {
+            text-align: center;
+            color: white;
+            padding: 10px 0;
+            background-color: #f7f7f7;
+        }
+        .footer {
             text-align: center;
             color: white;
             background-color: #333;
@@ -20,20 +25,23 @@
 </head>
 <body>
   <div class="email-content">
-      <div class="header">[Your Company Logo]</div>
-  
-      <p>Dear {{.Name}},</p>
-      <p>We're delighted to inform you that your subscription for {{.Product}} has been successfully renewed.</p>
+    <div class="header">
+        <img src="https://i.imgur.com/rBtQa2M.png" alt="LensQuery" style="max-width:200px; height:auto;">
+    </div>
+
+      <p>Dear buddy,</p>
+      <p>We're delighted to inform you that your subscription for {{.SubscriptionPlan}} has been successfully renewed.</p>
       <p>Details of the renewal:</p>
       <ul>
-          <li>Product: {{.Product}}</li>
-          <li>Transaction ID: {{.TransactionID}}</li>
-          <li>Date: {{.RenewalDate}}</li>
-          <li>Amount: {{.Amount}}</li>
+        <li><b>Product:</b> {{.SubscriptionPlan}}</li>
+        <li><b>Transaction ID:</b> {{.TransactionID}}</li>
+        <li><b>Date:</b> {{.PurchaseTime}}</li>
+        <li><b>Expires on:</b> {{.ExpirationTime}}</li>
+        <li><b>Amount:</b> {{.Price}}</li>
       </ul>
-      <p>We continue to be honored by your trust in our services. If you have any inquiries or require assistance, our support team is here to help at support@example.com.</p>
+      <p>We continue to be honored by your trust in our services. If you have any inquiries or require assistance, our support team is here to help at admin@lensquery.com</p>
   
-      <div class="footer">The [Your Company Name] Team</div>
+      <div class="footer">The LensQuery Team</div>
   </div>
 </body>
 </html>

@@ -9,7 +9,13 @@
             border: 1px solid #dcdcdc;
             background-color: #f7f7f7;
         }
-        .header, .footer {
+        .header {
+            text-align: center;
+            color: white;
+            padding: 10px 0;
+            background-color: #f7f7f7;
+        }
+        .footer {
             text-align: center;
             color: white;
             background-color: #333;
@@ -19,17 +25,19 @@
 </head>
 <body>
 <div class="email-content">
-    <div class="header">[Your Company Logo]</div>
+    <div class="header">
+        <img src="https://i.imgur.com/rBtQa2M.png" alt="LensQuery" style="max-width:200px; height:auto;">
+    </div>
 
     <p>Dear buddy,</p>
     <p>We're thrilled to have you on board. Thank you for purchasing {{.SubscriptionPlan}}.</p>
-    <p>Your transaction details:</p>
+    <p>The information about your purchase is as follows:</p>
     <ul>
-        <li>Product: {{.SubscriptionPlan}}</li>
-        <li>Transaction ID: {{.TransactionID}}</li>
-        <li>Date: {{.PurchaseTime}}</li>
-        <li>Expiration at: {{.ExpirationTime}}</li>
-        <li>Amount: {{.Price}}</li>
+        <li><b>Product:</b> {{.SubscriptionPlan}}</li>
+        <li><b>Transaction ID:</b> {{.TransactionID}}</li>
+        <li><b>Date:</b> {{.PurchaseTime}}</li>
+        <li><b>Expires on:</b> {{.ExpirationTime}}</li>
+        <li><b>Amount:</b> {{.Price}}</li>
     </ul>
     <p>We're committed to delivering exceptional value. If you have questions or need support, feel free to contact our team at admin@lensquery.com.</p>
 

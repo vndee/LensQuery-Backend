@@ -1,12 +1,16 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
+	"github.com/vndee/lensquery-backend/pkg/email"
 	"github.com/vndee/lensquery-backend/pkg/model"
 	"gorm.io/gorm"
 )
@@ -17,7 +21,6 @@ func handleTestEvent(event *model.Event) {
 
 func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) {
 	plan := config.PlanConfigs[event.ProductID]
-	log.Println("Purchased plan:", plan)
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
@@ -37,10 +40,19 @@ func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) 
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
+	sendEmail(event.Type, event.AppUserID, model.EmailData{
+		SubscriptionPlan: plan.Name,
+		TransactionID:    event.TransactionID,
+		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	})
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
 func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
+	plan := config.PlanConfigs[event.ProductID]
+
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
 		PurchasedTimestampMs: event.PurchasedAtMs,
@@ -63,14 +75,19 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 			"remain_text_snap":      0,
 		})
 	}
-	log.Println("Expired plan:", userCredits)
 
+	sendEmail(event.Type, event.AppUserID, model.EmailData{
+		SubscriptionPlan: plan.Name,
+		TransactionID:    event.TransactionID,
+		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	})
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
 func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 	plan := config.PlanConfigs[event.ProductID]
-	log.Println("Renewed plan:", plan)
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
@@ -89,6 +106,13 @@ func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
+	sendEmail(event.Type, event.AppUserID, model.EmailData{
+		SubscriptionPlan: plan.Name,
+		TransactionID:    event.TransactionID,
+		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	})
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
@@ -154,4 +178,25 @@ func EventHook(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func sendEmail(emailType string, recipient string, data model.EmailData) error {
+	user, err := config.FirebaseAuth.GetUser(context.Background(), recipient)
+	if err != nil {
+		log.Println("[Err]", err)
+		return err
+	}
+
+	go func() {
+		err := email.Send(emailType, user.Email, data)
+
+		if err != nil {
+			log.Println("[Send email err]", err)
+			// TODO: Handle sending error
+		} else {
+			log.Println("Email sent!")
+		}
+	}()
+
+	return nil
 }
