@@ -81,8 +81,8 @@ func Setup() *fiber.App {
 	cre := v1.Group("/credit")
 	cre.Get("/details", handler.GetUserRemainCredits)
 
-	email := v1.Group("/email")
-	email.Get("/send", handler.SendEmail)
+	// email := v1.Group("/email")
+	// email.Get("/send", handler.SendEmail)
 
 	return app
 }
