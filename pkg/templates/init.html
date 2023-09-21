@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .email-content {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #dcdcdc;
+            background-color: #f7f7f7;
+        }
+        .header, .footer {
+            text-align: center;
+            color: white;
+            background-color: #333;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="email-content">
+    <div class="header">[Your Company Logo]</div>
+
+    <p>Dear buddy,</p>
+    <p>We're thrilled to have you on board. Thank you for purchasing {{.SubscriptionPlan}}.</p>
+    <p>Your transaction details:</p>
+    <ul>
+        <li>Product: {{.SubscriptionPlan}}</li>
+        <li>Transaction ID: {{.TransactionID}}</li>
+        <li>Date: {{.PurchaseTime}}</li>
+        <li>Expiration at: {{.ExpirationTime}}</li>
+        <li>Amount: {{.Price}}</li>
+    </ul>
+    <p>We're committed to delivering exceptional value. If you have questions or need support, feel free to contact our team at admin@lensquery.com.</p>
+
+    <div class="footer">The LensQuery Team</div>
+</div>
+</body>
+</html>

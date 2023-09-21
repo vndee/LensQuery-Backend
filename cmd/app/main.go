@@ -14,6 +14,7 @@ import (
 	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/handler"
+	"github.com/vndee/lensquery-backend/pkg/templates"
 )
 
 var (
@@ -45,6 +46,11 @@ func Setup() *fiber.App {
 		log.Fatalf("Failed to load subscription plan config: %v", err)
 	}
 
+	err = templates.Load()
+	if err != nil {
+		log.Fatalf("Failed to load email templates: %v", err)
+	}
+
 	app.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.SendString("OK")
 	})
@@ -63,7 +69,7 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
 		FirebaseApp: fireApp,
-		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook"},
+		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook", "GET::/api/v1/email/send"},
 	}))
 
 	// Routes
@@ -83,6 +89,9 @@ func Setup() *fiber.App {
 
 	cre := v1.Group("/credit")
 	cre.Get("/details", handler.GetUserRemainCredits)
+
+	email := v1.Group("/email")
+	email.Get("/send", handler.SendEmail)
 
 	return app
 }

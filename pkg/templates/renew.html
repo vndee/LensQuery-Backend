@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .email-content {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #dcdcdc;
+            background-color: #f7f7f7;
+        }
+        .header, .footer {
+            text-align: center;
+            color: white;
+            background-color: #333;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+  <div class="email-content">
+      <div class="header">[Your Company Logo]</div>
+  
+      <p>Dear {{.Name}},</p>
+      <p>We're delighted to inform you that your subscription for {{.Product}} has been successfully renewed.</p>
+      <p>Details of the renewal:</p>
+      <ul>
+          <li>Product: {{.Product}}</li>
+          <li>Transaction ID: {{.TransactionID}}</li>
+          <li>Date: {{.RenewalDate}}</li>
+          <li>Amount: {{.Amount}}</li>
+      </ul>
+      <p>We continue to be honored by your trust in our services. If you have any inquiries or require assistance, our support team is here to help at support@example.com.</p>
+  
+      <div class="footer">The [Your Company Name] Team</div>
+  </div>
+</body>
+</html>
+  

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .email-content {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #dcdcdc;
+            background-color: #f7f7f7;
+        }
+        .header, .footer {
+            text-align: center;
+            color: white;
+            background-color: #333;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+  <div class="email-content">
+      <div class="header">[Your Company Logo]</div>
+  
+      <p>Dear {{.Name}},</p>
+      <p>We hope you've enjoyed your time with {{.Product}}. We'd like to inform you that your subscription has now expired.</p>
+      <p>Details of the expiration:</p>
+      <ul>
+          <li>Product: {{.Product}}</li>
+          <li>Expiration Date: {{.ExpirationDate}}</li>
+      </ul>
+      <p>If this was unintentional, you can easily renew your subscription by visiting <a href="[Subscription Renewal Link]">this link</a>. If you have any questions or need assistance, our dedicated team is here to support you at support@example.com.</p>
+  
+      <div class="footer">The [Your Company Name] Team</div>
+  </div>
+</body>
+</html>
+  
