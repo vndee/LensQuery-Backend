@@ -116,6 +116,19 @@ func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
+func handleCancelationEvent(event *model.Event) (*model.UserCredits, error) {
+	plan := config.PlanConfigs[event.ProductID]
+
+	sendEmail(event.Type, event.AppUserID, model.EmailData{
+		SubscriptionPlan: plan.Name,
+		TransactionID:    event.TransactionID,
+		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	})
+	return nil, nil
+}
+
 func EventHook(c *fiber.Ctx) error {
 	// Check API Bearer token in the header
 	if c.Get("Authorization") != "Bearer "+os.Getenv("WEBHOOK_BEARER") {
@@ -147,7 +160,7 @@ func EventHook(c *fiber.Ctx) error {
 		response, err = handleRenewalEvent(&event)
 
 	case "CANCELLATION":
-		break
+		response, err = handleCancelationEvent(&event)
 
 	case "UNCANCELLATION":
 		break

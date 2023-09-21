@@ -35,7 +35,7 @@ func Send(eventType string, recipient string, data model.EmailData) error {
 	case "RENEWAL":
 		title = "Your subscription has been renewed!"
 		tmpl = *templates.EmailTemplates.Renewal
-	case "CANCELATION":
+	case "CANCELLATION":
 		title = "Your subscription has been canceled!"
 		tmpl = *templates.EmailTemplates.Cancelation
 	case "EXPIRATION":
