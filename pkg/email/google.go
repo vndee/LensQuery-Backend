@@ -14,7 +14,7 @@ import (
 
 const (
 	GoogleSMTPServer = "smtp.gmail.com"
-	GoogleSMTPPort   = 465
+	GoogleSMTPPort   = 587
 )
 
 var (
