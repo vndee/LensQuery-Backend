@@ -13,9 +13,16 @@ import (
 	"github.com/vndee/lensquery-backend/pkg/model"
 )
 
-var limiterConfig *go_limiter.Limit = &go_limiter.Limit{
+var limiterEmailConfig *go_limiter.Limit = &go_limiter.Limit{
 	Algorithm: go_limiter.SlidingWindowAlgorithm,
-	Rate:      2,
+	Rate:      5,
+	Burst:     1,
+	Period:    30 * 60 * time.Second, // period of 30 minutes
+}
+
+var limiterIPConfig *go_limiter.Limit = &go_limiter.Limit{
+	Algorithm: go_limiter.SlidingWindowAlgorithm,
+	Rate:      10,
 	Burst:     1,
 	Period:    30 * 60 * time.Second, // period of 30 minutes
 }
@@ -26,22 +33,26 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	res, err := limiter.Limiter.Allow(c.Context(), recipient, limiterConfig)
+	res, err := limiter.Limiter.Allow(c.Context(), recipient, limiterEmailConfig)
 	if err != nil {
 		log.Println("Limiter:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 	if !res.Allowed {
-		return c.SendStatus(fiber.StatusTooManyRequests)
+		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+			"type": "EMAIL",
+		})
 	}
 
-	res, err = limiter.Limiter.Allow(c.Context(), c.IP(), limiterConfig)
+	res, err = limiter.Limiter.Allow(c.Context(), c.IP(), limiterIPConfig)
 	if err != nil {
 		log.Println("Limiter:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 	if !res.Allowed {
-		return c.SendStatus(fiber.StatusTooManyRequests)
+		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+			"type": "IP",
+		})
 	}
 
 	code, err := generateRandomCode(6)
