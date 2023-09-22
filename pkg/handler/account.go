@@ -3,17 +3,46 @@ package handler
 import (
 	"crypto/rand"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/shareed2k/go_limiter"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/email"
+	"github.com/vndee/lensquery-backend/pkg/limiter"
 	"github.com/vndee/lensquery-backend/pkg/model"
 )
+
+// Fix bug: change "&go_limiter.Limit" to "*go_limiter.Limit"
+var limiterConfig *go_limiter.Limit = &go_limiter.Limit{
+	Algorithm: go_limiter.SlidingWindowAlgorithm,
+	Rate:      2,
+	Burst:     1,
+	Period:    30 * 60 * time.Second, // period of 30 minutes
+}
 
 func RequestResetPasswordCode(c *fiber.Ctx) error {
 	recipient := c.Query("recipient")
 	if recipient == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	res, err := limiter.Limiter.Allow(c.Context(), recipient, limiterConfig)
+	if err != nil {
+		log.Println("Limiter:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	if !res.Allowed {
+		return c.SendStatus(fiber.StatusTooManyRequests)
+	}
+
+	res, err = limiter.Limiter.Allow(c.Context(), c.IP(), limiterConfig)
+	if err != nil {
+		log.Println("Limiter:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	if !res.Allowed {
+		return c.SendStatus(fiber.StatusTooManyRequests)
 	}
 
 	code, err := generateRandomCode(6)

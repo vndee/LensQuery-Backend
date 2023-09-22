@@ -12,6 +12,7 @@ import (
 	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/handler"
+	"github.com/vndee/lensquery-backend/pkg/limiter"
 	"github.com/vndee/lensquery-backend/pkg/templates"
 )
 
@@ -32,6 +33,11 @@ func Setup() *fiber.App {
 	)
 
 	config.SetupFirebase()
+
+	err := limiter.InitLimter()
+	if err != nil {
+		log.Fatalf("Failed to init limiter: %v", err)
+	}
 
 	cleanup, err := database.GetCloudSQLDB()
 	if err != nil {
