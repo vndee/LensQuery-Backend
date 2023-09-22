@@ -13,7 +13,6 @@ import (
 	"github.com/vndee/lensquery-backend/pkg/model"
 )
 
-// Fix bug: change "&go_limiter.Limit" to "*go_limiter.Limit"
 var limiterConfig *go_limiter.Limit = &go_limiter.Limit{
 	Algorithm: go_limiter.SlidingWindowAlgorithm,
 	Rate:      2,
