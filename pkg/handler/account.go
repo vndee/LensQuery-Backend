@@ -2,9 +2,11 @@ package handler
 
 import (
 	"crypto/rand"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/shareed2k/go_limiter"
 	"github.com/vndee/lensquery-backend/pkg/database"
@@ -67,9 +69,23 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 		Code:  code,
 	}
 
-	response := database.Pool.Create(&codeData)
-	if err = database.ProcessDatabaseResponse(response); err != nil {
-		log.Println("Insert database:", err)
+	codeMap := map[string]string{
+		"type": "RESET_PASSWORD",
+		"code": code,
+	}
+	codeDict, err := sonic.Marshal(&codeMap)
+	if err != nil {
+		log.Println("Marshal:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	set, err := database.RedisClient.SetNX(c.Context(), fmt.Sprintf("%s_%s", codeData.Type, codeData.Email), codeDict, 5*time.Minute).Result()
+	if err != nil {
+		log.Println("Redis:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	if !set {
+		log.Println("Redis: SetNX failed", set)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -79,7 +95,9 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.SendStatus(fiber.StatusAccepted)
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"exp": time.Now().Add(5 * time.Minute).Unix(),
+	})
 }
 
 func VerifyCode(c *fiber.Ctx) error {
@@ -91,14 +109,24 @@ func VerifyCode(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	codeData := model.VerificationCode{}
-	response := database.Pool.Where("type = ? AND email = ? AND code = ?", verifyType, email, code).First(&codeData)
-	if err := database.ProcessDatabaseResponse(response); err != nil {
+	codeDict, err := database.RedisClient.Get(c.Context(), fmt.Sprintf("%s_%s", verifyType, email)).Result()
+	if err != nil {
+		log.Println("Redis:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	var codeMap map[string]string
+	err = sonic.Unmarshal([]byte(codeDict), &codeMap)
+	if err != nil {
+		log.Println("Unmarshal:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	if codeMap["type"] != verifyType || codeMap["code"] != code {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	_ = database.Pool.Delete(&codeData)
-
+	_ = database.RedisClient.Del(c.Context(), fmt.Sprintf("%s_%s", verifyType, email))
 	return c.SendStatus(fiber.StatusOK)
 }
 

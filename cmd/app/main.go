@@ -33,8 +33,12 @@ func Setup() *fiber.App {
 	)
 
 	config.SetupFirebase()
+	err := database.ConnectRedis()
+	if err != nil {
+		log.Fatalf("Failed to connect to redis: %v", err)
+	}
 
-	err := limiter.InitLimter()
+	err = limiter.InitLimter()
 	if err != nil {
 		log.Fatalf("Failed to init limiter: %v", err)
 	}

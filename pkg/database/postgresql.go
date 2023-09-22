@@ -57,7 +57,6 @@ func GetCloudSQLDB() (func() error, error) {
 func CreateTables() {
 	Pool.AutoMigrate(&model.UserCredits{})
 	Pool.AutoMigrate(&model.CreditUsageHistory{})
-	Pool.AutoMigrate(&model.VerificationCode{})
 }
 
 func ProcessDatabaseResponse(response *gorm.DB) error {
