@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"cloud.google.com/go/cloudsqlconn"
 	"cloud.google.com/go/cloudsqlconn/postgres/pgxv4"
@@ -38,10 +39,18 @@ func GetCloudSQLDB() (func() error, error) {
 	dbPool, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: db,
 	}), &gorm.Config{})
-
 	if err != nil {
 		log.Fatalf("Error on gorm.Open: %v", err)
 	}
+
+	sqlDB, err := dbPool.DB()
+	if err != nil {
+		log.Fatalf("Error on dbPool.DB: %v", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	Pool = dbPool
 
