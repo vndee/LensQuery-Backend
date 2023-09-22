@@ -15,7 +15,7 @@ func SendEmail(c *fiber.Ctx) error {
 	}
 
 	go func() {
-		err := email.Send("INITIAL_PURCHASE", recipient, model.EmailData{
+		err := email.SendSubscriptionEvent("INITIAL_PURCHASE", recipient, model.EmailData{
 			SubscriptionPlan: "Premium Plan",
 			TransactionID:    "1234567890",
 			PurchaseTime:     "2021-01-01 00:00:00",

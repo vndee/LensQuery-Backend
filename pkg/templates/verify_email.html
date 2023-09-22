@@ -1,0 +1,48 @@
+<html>
+<head>
+    <style>
+        .email-content {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #dcdcdc;
+            background-color: #f7f7f7;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            padding: 10px 0;
+            background-color: #f7f7f7;
+        }
+        .footer {
+            text-align: center;
+            color: white;
+            background-color: #333;
+            padding: 10px 0;
+        }
+        .code {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            padding: 10px 0;
+            background-color: #f7f7f7;
+        }
+    </style>
+</head>
+<body>
+<div class="email-content">
+    <div class="header">
+        <img src="https://i.imgur.com/rBtQa2M.png" alt="LensQuery" style="max-width:200px; height:auto;">
+    </div>
+      <p>Dear buddy,</p>
+      <p>We've received your request to reset your password. Please click enter the verification code below into the LensQuery app to reset your password.</p>
+      <div class="code">{{.Code}}</div>
+      <p>If you didn't request a password reset, please ignore this email.</p>
+      <p>Thank you for using LensQuery!</p>
+      <div class="footer">The LensQuery Team</div>
+  </div>
+</body>
+</html>
+  

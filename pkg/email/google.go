@@ -24,7 +24,7 @@ var (
 	auth           = smtp.PlainAuth("", GoogleEmail, GooglePassword, GoogleSMTPServer)
 )
 
-func Send(eventType string, recipient string, data model.EmailData) error {
+func SendSubscriptionEvent(eventType string, recipient string, data model.EmailData) error {
 	var title string
 	var tmpl template.Template
 
@@ -66,4 +66,41 @@ func Send(eventType string, recipient string, data model.EmailData) error {
 	}
 
 	return nil
+}
+
+func SendVerificationCode(emailType string, recipient string, data model.VerificationCode) error {
+	var title string
+	var tmpl template.Template
+
+	switch emailType {
+	case "RESET_PASSWORD":
+		title = "Reset your password for LensQuery"
+		tmpl = *templates.EmailTemplates.ResetPassword
+
+	case "VERIFY_EMAIL":
+		title = "Verify your email address for LensQuery"
+		tmpl = *templates.EmailTemplates.VerifyEmail
+
+	default:
+		return os.ErrInvalid
+	}
+
+	var emailBody bytes.Buffer
+	err := (&tmpl).Execute(&emailBody, data)
+	if err != nil {
+		log.Println("[Err]", err)
+		return err
+	}
+
+	subject := "Subject: " + title + "\r\n"
+	from := fmt.Sprintf("From: %s <%s>\r\n", "LensQuery", GoogleEmail)
+	toHeader := "To: " + recipient + "\r\n"
+	mime := "MIME-version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
+
+	headers := subject + from + toHeader + mime
+	msg := []byte(headers + "\r\n" + emailBody.String())
+	to := []string{recipient}
+	err = smtp.SendMail(GoogleSMTPServer+":"+strconv.Itoa(GoogleSMTPPort), auth, GoogleEmail, to, msg)
+
+	return err
 }

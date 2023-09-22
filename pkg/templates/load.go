@@ -7,13 +7,17 @@ type HTMLTemplates struct {
 	Renewal         *template.Template
 	Cancelation     *template.Template
 	Expiration      *template.Template
+	ResetPassword   *template.Template
+	VerifyEmail     *template.Template
 }
 
 const (
-	INIT_PURCHASE = "./pkg/templates/init.html"
-	RENEWAL       = "./pkg/templates/renew.html"
-	CANCELATION   = "./pkg/templates/cancel.html"
-	EXPIRATION    = "./pkg/templates/expire.html"
+	INIT_PURCHASE  = "./pkg/templates/init.html"
+	RENEWAL        = "./pkg/templates/renew.html"
+	CANCELATION    = "./pkg/templates/cancel.html"
+	EXPIRATION     = "./pkg/templates/expire.html"
+	RESET_PASSWORD = "./pkg/templates/reset_password.html"
+	VERIFY_EMAIL   = "./pkg/templates/verify_email.html"
 )
 
 var EmailTemplates *HTMLTemplates
@@ -34,6 +38,14 @@ func Load() error {
 		return err
 	}
 	EmailTemplates.Expiration, err = template.ParseFiles(EXPIRATION)
+	if err != nil {
+		return err
+	}
+	EmailTemplates.ResetPassword, err = template.ParseFiles(RESET_PASSWORD)
+	if err != nil {
+		return err
+	}
+	EmailTemplates.VerifyEmail, err = template.ParseFiles(VERIFY_EMAIL)
 	if err != nil {
 		return err
 	}

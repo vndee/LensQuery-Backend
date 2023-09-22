@@ -40,18 +40,18 @@ func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) 
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
-	sendEmail(event.Type, event.AppUserID, model.EmailData{
-		SubscriptionPlan: plan.Name,
-		TransactionID:    event.TransactionID,
-		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
-		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
-		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
-	})
+	// sendEmail(event.Type, event.AppUserID, model.EmailData{
+	// 	SubscriptionPlan: plan.Name,
+	// 	TransactionID:    event.TransactionID,
+	// 	PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+	// 	ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+	// 	Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	// })
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
 func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
-	plan := config.PlanConfigs[event.ProductID]
+	// plan := config.PlanConfigs[event.ProductID]
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
@@ -76,13 +76,13 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 		})
 	}
 
-	sendEmail(event.Type, event.AppUserID, model.EmailData{
-		SubscriptionPlan: plan.Name,
-		TransactionID:    event.TransactionID,
-		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
-		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
-		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
-	})
+	// sendEmail(event.Type, event.AppUserID, model.EmailData{
+	// 	SubscriptionPlan: plan.Name,
+	// 	TransactionID:    event.TransactionID,
+	// 	PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+	// 	ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+	// 	Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	// })
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
@@ -106,13 +106,13 @@ func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 		response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", event.AppUserID).Updates(userCredits)
 	}
 
-	sendEmail(event.Type, event.AppUserID, model.EmailData{
-		SubscriptionPlan: plan.Name,
-		TransactionID:    event.TransactionID,
-		PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
-		ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
-		Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
-	})
+	// sendEmail(event.Type, event.AppUserID, model.EmailData{
+	// 	SubscriptionPlan: plan.Name,
+	// 	TransactionID:    event.TransactionID,
+	// 	PurchaseTime:     time.Unix(event.PurchasedAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+	// 	ExpirationTime:   time.Unix(event.ExpirationAtMs/1000, 0).Format("2006-01-02 15:04:05"),
+	// 	Price:            fmt.Sprintf("%.2f %s", event.PriceInPurchasedCurrency, event.Currency),
+	// })
 	return &userCredits, database.ProcessDatabaseResponse(response)
 }
 
@@ -201,7 +201,7 @@ func sendEmail(emailType string, recipient string, data model.EmailData) error {
 	}
 
 	go func() {
-		err := email.Send(emailType, user.Email, data)
+		err := email.SendSubscriptionEvent(emailType, user.Email, data)
 
 		if err != nil {
 			log.Println("[Send email err]", err)

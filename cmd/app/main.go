@@ -60,8 +60,14 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	app.Use(gofiberfirebaseauth.New(gofiberfirebaseauth.Config{
 		FirebaseApp: config.FirebaseApp,
-		IgnoreUrls:  []string{"GET::/terms", "GET::/privacy", "POST::/api/v1/subscription/event_hook", "GET::/api/v1/email/send"},
-	}))
+		IgnoreUrls: []string{
+			"GET::/terms",
+			"GET::/privacy",
+			"GET::/api/v1/email/send",
+			"POST::/api/v1/subscription/event_hook",
+			"GET::/api/v1/account/reset_password",
+			"GET::/api/v1/account/verify_code",
+		}}))
 
 	// Routes
 	app.Get("/terms", handler.GetTermsOfUse)
@@ -81,8 +87,9 @@ func Setup() *fiber.App {
 	cre := v1.Group("/credit")
 	cre.Get("/details", handler.GetUserRemainCredits)
 
-	// email := v1.Group("/email")
-	// email.Get("/send", handler.SendEmail)
+	acc := v1.Group("/account")
+	acc.Get("/reset_password", handler.RequestResetPasswordCode)
+	acc.Get("/verify_code", handler.VerifyCode)
 
 	return app
 }
