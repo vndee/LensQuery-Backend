@@ -10,6 +10,16 @@ type VerificationCode struct {
 	Code  string `json:"code"`
 }
 
+type RequestResetPasswordParams struct {
+	Recipient string `json:"recipient"`
+}
+
+type VerifyResetPasswordParams struct {
+	Type  string `json:"type"`
+	Email string `json:"email"`
+	Code  string `json:"code"`
+}
+
 type ResetPasswordParams struct {
 	Email       string `json:"email"`
 	Code        string `json:"code"`

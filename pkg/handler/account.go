@@ -32,12 +32,16 @@ var limiterIPConfig *go_limiter.Limit = &go_limiter.Limit{
 }
 
 func RequestResetPasswordCode(c *fiber.Ctx) error {
-	recipient := c.Query("recipient")
-	if recipient == "" {
+	params := model.RequestResetPasswordParams{}
+	if err := c.BodyParser(&params); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	res, err := limiter.Limiter.Allow(c.Context(), recipient, limiterEmailConfig)
+	if params.Recipient == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	res, err := limiter.Limiter.Allow(c.Context(), params.Recipient, limiterEmailConfig)
 	if err != nil {
 		log.Println("Limiter:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
@@ -67,7 +71,7 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 
 	codeData := model.VerificationCode{
 		Type:  "RESET_PASSWORD",
-		Email: recipient,
+		Email: params.Recipient,
 		Code:  code,
 	}
 
@@ -105,7 +109,7 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 	}
-	err = email.SendVerificationCode("RESET_PASSWORD", recipient, codeData)
+	err = email.SendVerificationCode("RESET_PASSWORD", params.Recipient, codeData)
 	if err != nil {
 		log.Println("Send email:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
@@ -117,15 +121,16 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 }
 
 func VerifyCode(c *fiber.Ctx) error {
-	verifyType := c.Query("type")
-	email := c.Query("email")
-	code := c.Query("code")
-
-	if !(verifyType == "RESET_PASSWORD" || verifyType == "VERIFY_EMAIL") || email == "" || code == "" {
+	params := model.VerifyResetPasswordParams{}
+	if err := c.BodyParser(&params); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	codeDict, err := database.RedisClient.Get(c.Context(), fmt.Sprintf("%s_%s", verifyType, email)).Result()
+	if !(params.Type == "RESET_PASSWORD" || params.Type == "VERIFY_EMAIL") || params.Email == "" || params.Code == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	codeDict, err := database.RedisClient.Get(c.Context(), fmt.Sprintf("%s_%s", params.Type, params.Email)).Result()
 	if err != nil {
 		log.Println("Redis:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
@@ -138,7 +143,7 @@ func VerifyCode(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	if codeMap["type"] != verifyType || codeMap["code"] != code {
+	if codeMap["type"] != params.Type || codeMap["code"] != params.Code {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
