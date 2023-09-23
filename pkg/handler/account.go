@@ -6,9 +6,11 @@ import (
 	"log"
 	"time"
 
+	"firebase.google.com/go/auth"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/shareed2k/go_limiter"
+	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/email"
 	"github.com/vndee/lensquery-backend/pkg/limiter"
@@ -87,7 +89,7 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 	}
 
 	if exists > 0 {
-		err = database.RedisClient.Set(c.Context(), key, codeDict, 5*time.Minute).Err()
+		err = database.RedisClient.Set(c.Context(), key, codeDict, 15*time.Minute).Err()
 		if err != nil {
 			log.Println("Redis:", err)
 			return c.SendStatus(fiber.StatusInternalServerError)
@@ -140,7 +142,50 @@ func VerifyCode(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	_ = database.RedisClient.Del(c.Context(), fmt.Sprintf("%s_%s", verifyType, email))
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func ResetPassword(c *fiber.Ctx) error {
+	// parse params from request body
+	params := model.ResetPasswordParams{}
+	if err := c.BodyParser(&params); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// validate params
+	if params.Code == "" || params.NewPassword == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// check if code is valid
+	key := fmt.Sprintf("%s_%s", "RESET_PASSWORD", params.Email)
+	codeDict, err := database.RedisClient.Get(c.Context(), key).Result()
+	if err != nil {
+		log.Println("Redis:", err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	var codeMap map[string]string
+	err = sonic.Unmarshal([]byte(codeDict), &codeMap)
+	if err != nil {
+		log.Println("Unmarshal:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	if codeMap["type"] != "RESET_PASSWORD" || codeMap["code"] != params.Code {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	// update password
+	updateParams := (&auth.UserToUpdate{}).Password(params.NewPassword)
+	_, err = config.FirebaseAuth.UpdateUser(c.Context(), params.UserId, updateParams)
+	if err != nil {
+		log.Println("Firebase:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	// delete code
+	_ = database.RedisClient.Del(c.Context(), key)
 	return c.SendStatus(fiber.StatusOK)
 }
 
