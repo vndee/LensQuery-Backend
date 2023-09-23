@@ -176,9 +176,16 @@ func ResetPassword(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
+	// get user by email
+	user, err := config.FirebaseAuth.GetUserByEmail(c.Context(), params.Email)
+	if err != nil {
+		log.Println("Firebase:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
 	// update password
 	updateParams := (&auth.UserToUpdate{}).Password(params.NewPassword)
-	_, err = config.FirebaseAuth.UpdateUser(c.Context(), params.UserId, updateParams)
+	_, err = config.FirebaseAuth.UpdateUser(c.Context(), user.UID, updateParams)
 	if err != nil {
 		log.Println("Firebase:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)

@@ -11,7 +11,6 @@ type VerificationCode struct {
 }
 
 type ResetPasswordParams struct {
-	UserId      string `json:"user_id"`
 	Email       string `json:"email"`
 	Code        string `json:"code"`
 	NewPassword string `json:"new_password"`
