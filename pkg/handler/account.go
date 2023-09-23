@@ -17,14 +17,14 @@ import (
 
 var limiterEmailConfig *go_limiter.Limit = &go_limiter.Limit{
 	Algorithm: go_limiter.SlidingWindowAlgorithm,
-	Rate:      5,
+	Rate:      100,
 	Burst:     1,
 	Period:    30 * 60 * time.Second, // period of 30 minutes
 }
 
 var limiterIPConfig *go_limiter.Limit = &go_limiter.Limit{
 	Algorithm: go_limiter.SlidingWindowAlgorithm,
-	Rate:      10,
+	Rate:      100,
 	Burst:     1,
 	Period:    30 * 60 * time.Second, // period of 30 minutes
 }
@@ -79,16 +79,30 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	set, err := database.RedisClient.SetNX(c.Context(), fmt.Sprintf("%s_%s", codeData.Type, codeData.Email), codeDict, 5*time.Minute).Result()
+	key := fmt.Sprintf("%s_%s", codeData.Type, codeData.Email)
+	exists, err := database.RedisClient.Exists(c.Context(), key).Result()
 	if err != nil {
 		log.Println("Redis:", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	if !set {
-		log.Println("Redis: SetNX failed", set)
-		return c.SendStatus(fiber.StatusInternalServerError)
-	}
 
+	if exists > 0 {
+		err = database.RedisClient.Set(c.Context(), key, codeDict, 5*time.Minute).Err()
+		if err != nil {
+			log.Println("Redis:", err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+	} else {
+		set, err := database.RedisClient.SetNX(c.Context(), key, codeDict, 5*time.Minute).Result()
+		if err != nil {
+			log.Println("Redis:", set, err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		if !set {
+			log.Println("Redis: SetNX failed", set, err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+	}
 	err = email.SendVerificationCode("RESET_PASSWORD", recipient, codeData)
 	if err != nil {
 		log.Println("Send email:", err)
