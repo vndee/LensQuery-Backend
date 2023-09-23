@@ -19,16 +19,16 @@ import (
 
 var limiterEmailConfig *go_limiter.Limit = &go_limiter.Limit{
 	Algorithm: go_limiter.SlidingWindowAlgorithm,
-	Rate:      100,
-	Burst:     1,
-	Period:    30 * 60 * time.Second, // period of 30 minutes
+	Rate:      config.EmailLimiterRate,
+	Burst:     config.EmailLimiterBurst,
+	Period:    config.EmailLimiterPeriod,
 }
 
 var limiterIPConfig *go_limiter.Limit = &go_limiter.Limit{
 	Algorithm: go_limiter.SlidingWindowAlgorithm,
-	Rate:      100,
-	Burst:     1,
-	Period:    30 * 60 * time.Second, // period of 30 minutes
+	Rate:      config.IPLimiterRate,
+	Burst:     config.IPLimiterBurst,
+	Period:    config.IPLimiterPeriod,
 }
 
 func RequestResetPasswordCode(c *fiber.Ctx) error {
@@ -93,13 +93,13 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 	}
 
 	if exists > 0 {
-		err = database.RedisClient.Set(c.Context(), key, codeDict, 15*time.Minute).Err()
+		err = database.RedisClient.Set(c.Context(), key, codeDict, config.AccountVerificationCodeTTL).Err()
 		if err != nil {
 			log.Println("Redis:", err)
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 	} else {
-		set, err := database.RedisClient.SetNX(c.Context(), key, codeDict, 5*time.Minute).Result()
+		set, err := database.RedisClient.SetNX(c.Context(), key, codeDict, config.AccountVerificationCodeTTL).Result()
 		if err != nil {
 			log.Println("Redis:", set, err)
 			return c.SendStatus(fiber.StatusInternalServerError)
@@ -116,7 +116,7 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
-		"exp": time.Now().Add(15 * time.Minute).Unix(),
+		"exp": time.Now().Add(config.AccountVerificationCodeTTL - 3).Unix(),
 	})
 }
 
