@@ -25,3 +25,7 @@ type ResetPasswordParams struct {
 	Code        string `json:"code"`
 	NewPassword string `json:"new_password"`
 }
+
+type DeleteAccountParams struct {
+	UserId string `json:"user_id"`
+}

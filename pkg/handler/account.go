@@ -201,6 +201,27 @@ func ResetPassword(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
+func DeleteAccount(c *fiber.Ctx) error {
+	params := model.DeleteAccountParams{}
+	if err := c.BodyParser(&params); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if params.UserId == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	err := config.FirebaseAuth.DeleteUser(c.Context(), params.UserId)
+	if err != nil {
+		log.Println("Firebase:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	// delete user credits
+	_ = database.Pool.Where("user_id = ?", params.UserId).Delete(&model.UserCredits{})
+	return c.SendStatus(fiber.StatusOK)
+}
+
 func generateRandomCode(length int) (string, error) {
 	const charset = "0123456789"
 	code := make([]byte, length)

@@ -102,6 +102,7 @@ func Setup() *fiber.App {
 	acc.Post("/reset_password", handler.RequestResetPasswordCode)
 	acc.Post("/verify_code", handler.VerifyCode)
 	acc.Post("/update_password", handler.ResetPassword)
+	acc.Delete("/", handler.DeleteAccount)
 
 	return app
 }
