@@ -116,7 +116,7 @@ func RequestResetPasswordCode(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
-		"exp": time.Now().Add(5 * time.Minute).Unix(),
+		"exp": time.Now().Add(15 * time.Minute).Unix(),
 	})
 }
 
