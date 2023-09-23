@@ -75,8 +75,8 @@ func Setup() *fiber.App {
 			"GET::/privacy",
 			"GET::/api/v1/email/send",
 			"POST::/api/v1/subscription/event_hook",
-			"GET::/api/v1/account/reset_password",
-			"GET::/api/v1/account/verify_code",
+			"POST::/api/v1/account/reset_password",
+			"POST::/api/v1/account/verify_code",
 			"POST::/api/v1/account/update_password",
 		}}))
 
@@ -99,8 +99,8 @@ func Setup() *fiber.App {
 	cre.Get("/details", handler.GetUserRemainCredits)
 
 	acc := v1.Group("/account")
-	acc.Get("/reset_password", handler.RequestResetPasswordCode)
-	acc.Get("/verify_code", handler.VerifyCode)
+	acc.Post("/reset_password", handler.RequestResetPasswordCode)
+	acc.Post("/verify_code", handler.VerifyCode)
 	acc.Post("/update_password", handler.ResetPassword)
 
 	return app
