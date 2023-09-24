@@ -18,7 +18,7 @@ func GetCloudSQLDB() error {
 		return nil
 	}
 
-	dbConn, err := ConnectGCPWithConnectorIAMAuthN()
+	dbConn, err := ConnectGCPWithConnector()
 	if err != nil {
 		log.Fatalf("Error on ConnectWithConnector: %v", err)
 	}
