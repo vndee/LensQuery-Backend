@@ -43,11 +43,10 @@ func Setup() *fiber.App {
 		log.Fatalf("Failed to init limiter: %v", err)
 	}
 
-	cleanup, err := database.GetCloudSQLDB()
+	err = database.GetCloudSQLDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer cleanup()
 
 	database.CreateTables()
 
