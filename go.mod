@@ -7,8 +7,12 @@ require (
 	cloud.google.com/go/vision v1.2.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/bytedance/sonic v1.10.0
+	github.com/go-redis/redis/v8 v8.11.1
 	github.com/gofiber/fiber/v2 v2.48.0
+	github.com/jackc/pgx/v4 v4.18.1
+	github.com/lib/pq v1.10.9
 	github.com/sacsand/gofiber-firebaseauth v1.4.3
+	github.com/shareed2k/go_limiter v0.0.8
 	github.com/stretchr/testify v1.8.4
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.4
@@ -29,7 +33,6 @@ require (
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/go-redis/redis/v8 v8.11.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
@@ -44,20 +47,18 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgtype v1.14.0 // indirect
-	github.com/jackc/pgx/v4 v4.18.1 // indirect
 	github.com/jackc/pgx/v5 v5.4.3 // indirect
+	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
-	github.com/shareed2k/go_limiter v0.0.8 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.48.0 // indirect
