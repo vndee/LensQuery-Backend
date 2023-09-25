@@ -77,7 +77,6 @@ func Setup() *fiber.App {
 			"POST::/api/v1/account/reset_password",
 			"POST::/api/v1/account/verify_code",
 			"POST::/api/v1/account/update_password",
-			"POST::/api/v1/account/activate_free_trial",
 		}}))
 
 	// Routes
