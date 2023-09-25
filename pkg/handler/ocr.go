@@ -325,6 +325,17 @@ func checkAvailableSnapCredits(c *fiber.Ctx, snapType string) bool {
 		return false
 	}
 
+	if userCredits.ExpiredTimestampMs < time.Now().Unix() {
+		_ = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Updates(map[string]interface{}{
+			"expired_timestamp_ms":  userCredits.ExpiredTimestampMs,
+			"ammount_equation_snap": 0,
+			"remain_equation_snap":  0,
+			"ammount_text_snap":     0,
+			"remain_text_snap":      0,
+		})
+		return false
+	}
+
 	switch snapType {
 	case "equation":
 		return userCredits.RemainEquationSnap > 0

@@ -77,6 +77,7 @@ func Setup() *fiber.App {
 			"POST::/api/v1/account/reset_password",
 			"POST::/api/v1/account/verify_code",
 			"POST::/api/v1/account/update_password",
+			"POST::/api/v1/account/activate_free_trial",
 		}}))
 
 	// Routes
@@ -98,6 +99,7 @@ func Setup() *fiber.App {
 	cre.Get("/details", handler.GetUserRemainCredits)
 
 	acc := v1.Group("/account")
+	acc.Post("/activate_free_trial", handler.ActivateUserTrial)
 	acc.Post("/reset_password", handler.RequestResetPasswordCode)
 	acc.Post("/verify_code", handler.VerifyCode)
 	acc.Post("/update_password", handler.ResetPassword)

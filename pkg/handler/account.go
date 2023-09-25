@@ -222,6 +222,78 @@ func DeleteAccount(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
+func ActivateUserTrial(c *fiber.Ctx) error {
+	params := model.ActivateUserTrialParams{}
+	if err := c.BodyParser(&params); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if params.UserId == "" || params.Email == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// check if user exists
+	user, err := config.FirebaseAuth.GetUser(c.Context(), params.UserId)
+	if err != nil {
+		log.Println("Firebase:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	if user.Email != params.Email {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// check if user already has trial
+	trialData := model.UserTrialData{}
+	err = database.Pool.Where("user_id = ?", params.UserId).First(&trialData).Error
+	if err == nil {
+		log.Println("User already has trial")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"exp": trialData.ExpiredTimestampMs,
+		})
+	}
+
+	if trialData.UserID != "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// create trial data
+	trialData = model.UserTrialData{
+		UserID:             params.UserId,
+		Email:              params.Email,
+		ExpiredTimestampMs: time.Now().Add(config.TrialPeriod).Unix(),
+	}
+
+	err = database.Pool.Create(&trialData).Error
+	if err != nil {
+		log.Println("Database:", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	// create user credits
+	credits := model.UserCredits{
+		UserID:               params.UserId,
+		PurchasedTimestampMs: trialData.CreatedAt.Unix(),
+		ExpiredTimestampMs:   trialData.ExpiredTimestampMs,
+		AmmountEquationSnap:  config.TrialFreeEquationCredits,
+		RemainEquationSnap:   config.TrialFreeEquationCredits,
+		AmmountTextSnap:      config.TrialFreeTextSnapCredits,
+		RemainTextSnap:       config.TrialFreeTextSnapCredits,
+	}
+
+	err = database.Pool.Create(&credits).Error
+	if err != nil {
+		log.Println("Database:", err)
+		// delete trial data
+		_ = database.Pool.Where("user_id = ?", params.UserId).Delete(&trialData)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"exp": trialData.ExpiredTimestampMs,
+	})
+}
+
 func generateRandomCode(length int) (string, error) {
 	const charset = "0123456789"
 	code := make([]byte, length)

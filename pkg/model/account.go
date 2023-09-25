@@ -29,3 +29,8 @@ type ResetPasswordParams struct {
 type DeleteAccountParams struct {
 	UserId string `json:"user_id"`
 }
+
+type ActivateUserTrialParams struct {
+	UserId string `json:"user_id"`
+	Email  string `json:"email"`
+}

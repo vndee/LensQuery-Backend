@@ -54,6 +54,7 @@ func GetCloudSQLDB() error {
 func CreateTables() {
 	Pool.AutoMigrate(&model.UserCredits{})
 	Pool.AutoMigrate(&model.CreditUsageHistory{})
+	Pool.AutoMigrate(&model.UserTrialData{})
 }
 
 func ProcessDatabaseResponse(response *gorm.DB) error {
