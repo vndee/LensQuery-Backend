@@ -99,6 +99,7 @@ func Setup() *fiber.App {
 
 	acc := v1.Group("/account")
 	acc.Post("/activate_free_trial", handler.ActivateUserTrial)
+	acc.Post("/check_free_trial", handler.CheckTrialPlan)
 	acc.Post("/reset_password", handler.RequestResetPasswordCode)
 	acc.Post("/verify_code", handler.VerifyCode)
 	acc.Post("/update_password", handler.ResetPassword)

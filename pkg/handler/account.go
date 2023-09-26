@@ -294,6 +294,43 @@ func ActivateUserTrial(c *fiber.Ctx) error {
 	})
 }
 
+func CheckTrialPlan(c *fiber.Ctx) error {
+	params := model.CheckTrialPlanParams{}
+	if err := c.BodyParser(&params); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if params.UserId == "" || params.Email == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// check if user exists
+	user, err := config.FirebaseAuth.GetUser(c.Context(), params.UserId)
+	if err != nil {
+		log.Println("Firebase:", err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if user.Email != params.Email {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// check if user already has trial
+	trialData := model.UserTrialData{}
+	err = database.Pool.Where("user_id = ?", params.UserId).First(&trialData).Error
+	if err == nil {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"exp": trialData.ExpiredTimestampMs,
+		})
+	}
+
+	if trialData.UserID != "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	return c.SendStatus(fiber.StatusNotFound)
+}
+
 func generateRandomCode(length int) (string, error) {
 	const charset = "0123456789"
 	code := make([]byte, length)

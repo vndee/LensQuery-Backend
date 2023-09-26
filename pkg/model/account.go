@@ -34,3 +34,8 @@ type ActivateUserTrialParams struct {
 	UserId string `json:"user_id"`
 	Email  string `json:"email"`
 }
+
+type CheckTrialPlanParams struct {
+	UserId string `json:"user_id"`
+	Email  string `json:"email"`
+}
