@@ -14,15 +14,44 @@ type Plan struct {
 	Name               string `json:"name"`
 }
 
-var PlanConfigs map[string]Plan
+var AppStorePlanConfigs map[string]Plan
+var PlayStorePlanConfigs map[string]Plan
 
-func LoadSubscriptionPlanConfig() error {
-	data, err := ioutil.ReadFile("./pkg/config/subConfig.json")
+func loadAppStoreSubscriptionPlanConfig() error {
+	data, err := ioutil.ReadFile("./pkg/config/appstore.json")
 	if err != nil {
 		return err
 	}
 
-	err = sonic.Unmarshal(data, &PlanConfigs)
+	err = sonic.Unmarshal(data, &AppStorePlanConfigs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func loadPlayStoreSubscriptionPlanConfig() error {
+	data, err := ioutil.ReadFile("./pkg/config/playstore.json")
+	if err != nil {
+		return err
+	}
+
+	err = sonic.Unmarshal(data, &PlayStorePlanConfigs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LoadSubscriptionPlanConfig() error {
+	err := loadAppStoreSubscriptionPlanConfig()
+	if err != nil {
+		return err
+	}
+
+	err = loadPlayStoreSubscriptionPlanConfig()
 	if err != nil {
 		return err
 	}

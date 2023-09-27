@@ -20,7 +20,14 @@ func handleTestEvent(event *model.Event) {
 }
 
 func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) {
-	plan := config.PlanConfigs[event.ProductID]
+	var plan config.Plan
+	if event.Store == "APP_STORE" {
+		plan = config.AppStorePlanConfigs[event.ProductID]
+	} else if event.Store == "PLAY_STORE" {
+		plan = config.PlayStorePlanConfigs[event.ProductID]
+	} else {
+		return nil, fmt.Errorf("unknown store")
+	}
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
@@ -87,7 +94,14 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 }
 
 func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
-	plan := config.PlanConfigs[event.ProductID]
+	var plan config.Plan
+	if event.Store == "APP_STORE" {
+		plan = config.AppStorePlanConfigs[event.ProductID]
+	} else if event.Store == "PLAY_STORE" {
+		plan = config.PlayStorePlanConfigs[event.ProductID]
+	} else {
+		return nil, fmt.Errorf("unknown store")
+	}
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
@@ -117,7 +131,14 @@ func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
 }
 
 func handleCancelationEvent(event *model.Event) (*model.UserCredits, error) {
-	plan := config.PlanConfigs[event.ProductID]
+	var plan config.Plan
+	if event.Store == "APP_STORE" {
+		plan = config.AppStorePlanConfigs[event.ProductID]
+	} else if event.Store == "PLAY_STORE" {
+		plan = config.PlayStorePlanConfigs[event.ProductID]
+	} else {
+		return nil, fmt.Errorf("unknown store")
+	}
 
 	sendEmail(event.Type, event.AppUserID, model.EmailData{
 		SubscriptionPlan: plan.Name,
