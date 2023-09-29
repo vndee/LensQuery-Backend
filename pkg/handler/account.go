@@ -300,18 +300,14 @@ func CheckTrialPlan(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	if params.UserId == "" || params.Email == "" {
+	if params.UserId == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
 	// check if user exists
-	user, err := config.FirebaseAuth.GetUser(c.Context(), params.UserId)
+	_, err := config.FirebaseAuth.GetUser(c.Context(), params.UserId)
 	if err != nil {
 		log.Println("Firebase:", err)
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	if user.Email != params.Email {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
