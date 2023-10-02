@@ -298,6 +298,8 @@ github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDN
 github.com/rogpeppe/go-internal v1.11.0/go.mod h1:ddIwULY96R17DhadqLgMfk9H9tvdUzkipdSkR5nkCZA=
 github.com/sacsand/gofiber-firebaseauth v1.4.3 h1:m7gXcqwE2QgQmSM94ndxJJFvx7SPLqcb2/bGZ2nTuTE=
 github.com/sacsand/gofiber-firebaseauth v1.4.3/go.mod h1:sjo6/EyxIkHO8Q802G4ASeQIw/4FnOrVUUGjg2IRrl8=
+github.com/sashabaranov/go-openai v1.15.4 h1:BXCR0Uxk5RipeY4yBC7g6pBVfcjh8jwrMNOYdie6yuk=
+github.com/sashabaranov/go-openai v1.15.4/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/shareed2k/go_limiter v0.0.8 h1:niyVcsxTYCkgRYOUpZafePNFs7qLIS9ZIDIzsspu0I4=
 github.com/shareed2k/go_limiter v0.0.8/go.mod h1:PauCu58ebv7K6AjOl6CWgIb+baxOkFXXUCt03VPUoH0=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=

@@ -55,6 +55,8 @@ func Setup() *fiber.App {
 		log.Fatalf("Failed to load subscription plan config: %v", err)
 	}
 
+	config.SetupOpenRouterClient()
+
 	err = templates.Load()
 	if err != nil {
 		log.Fatalf("Failed to load email templates: %v", err)
@@ -77,6 +79,7 @@ func Setup() *fiber.App {
 			"POST::/api/v1/account/reset_password",
 			"POST::/api/v1/account/verify_code",
 			"POST::/api/v1/account/update_password",
+			"POST::/api/v1/chat/completions",
 		}}))
 
 	// Routes
@@ -107,6 +110,7 @@ func Setup() *fiber.App {
 
 	chat := v1.Group("/chat")
 	chat.Get("/models", handler.ListAvailabelModels)
+	chat.Post("/completions", handler.Completion)
 
 	return app
 }
