@@ -105,6 +105,9 @@ func Setup() *fiber.App {
 	acc.Post("/update_password", handler.ResetPassword)
 	acc.Delete("/", handler.DeleteAccount)
 
+	chat := v1.Group("/chat")
+	chat.Get("/models", handler.ListAvailabelModels)
+
 	return app
 }
 
