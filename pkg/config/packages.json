@@ -1,5 +1,12 @@
 {
-	"rc_bronze": 5,
-	"rc_gold": 15,
-	"rc_silver": 10
+	"APP_STORE": {
+		"com.lensquery.bronze": 5,
+		"com.lensquery.silver": 10,
+		"com.lensquery.gold": 15
+	},
+	"PLAY_STORE": {
+		"com.lensquery.bronze": 5,
+		"com.lensquery.silver": 10,
+		"com.lensquery.gold": 15
+	}
 }

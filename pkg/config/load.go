@@ -14,13 +14,7 @@ type Plan struct {
 	Name               string `json:"name"`
 }
 
-type Package struct {
-	RCBronze int `json:"rc_bronze"`
-	RCSilver int `json:"rc_silver"`
-	RCGold   int `json:"rc_gold"`
-}
-
-var StorePackages *Package
+var StorePackages *map[string]map[string]int32
 var AppStorePlanConfigs map[string]Plan
 var PlayStorePlanConfigs map[string]Plan
 

@@ -15,6 +15,31 @@ import (
 	"gorm.io/gorm"
 )
 
+func handleNonRenewingPurchase(event *model.Event) (*model.UserCredits, error) {
+	var response *gorm.DB
+	addedAmount := (*config.StorePackages)[event.Store][event.ProductID]
+	if addedAmount == 0 {
+		return nil, fmt.Errorf("unknown product")
+	}
+
+	var userCredits model.UserCredits
+	response = database.Pool.Where("user_id = ?", event.AppUserID).First(&userCredits)
+
+	if response.RowsAffected == 0 {
+		response = database.Pool.Create(&model.UserCredits{
+			UserID:               event.AppUserID,
+			PurchasedTimestampMs: event.PurchasedAtMs,
+			CreditAmmount:        float64(addedAmount),
+		})
+	} else {
+		response = database.Pool.Model(&userCredits).Where("user_id = ?", event.AppUserID).Updates(map[string]interface{}{
+			"credit_ammount": userCredits.CreditAmmount + float64(addedAmount),
+		})
+	}
+
+	return &userCredits, database.ProcessDatabaseResponse(response)
+}
+
 func handleTestEvent(event *model.Event) {
 
 }
@@ -172,7 +197,7 @@ func EventHook(c *fiber.Ctx) error {
 		break
 
 	case "NON_RENEWING_PURCHASE":
-		break
+		response, err = handleNonRenewingPurchase(&event)
 
 	case "SUBSCRIPTION_PAUSED":
 		break
