@@ -50,7 +50,8 @@ func Setup() *fiber.App {
 
 	database.CreateTables()
 
-	err = config.LoadSubscriptionPlanConfig()
+	// err = config.LoadSubscriptionPlanConfig()
+	err = config.LoadStorePackagesConfig()
 	if err != nil {
 		log.Fatalf("Failed to load subscription plan config: %v", err)
 	}
@@ -79,7 +80,7 @@ func Setup() *fiber.App {
 			"POST::/api/v1/account/reset_password",
 			"POST::/api/v1/account/verify_code",
 			"POST::/api/v1/account/update_password",
-			"POST::/api/v1/chat/completions",
+			// "POST::/api/v1/chat/completions",
 		}}))
 
 	// Routes

@@ -9,22 +9,19 @@ import (
 type UserCredits struct {
 	*gorm.Model
 
-	UserID               string `json:"user_id" gorm:"primaryKey"`
-	PurchasedTimestampMs int64  `json:" purchased_timestamp_ms"`
-	ExpiredTimestampMs   int64  `json:"expired_timestamp_ms"`
-	AmmountEquationSnap  int    `json:"ammount_equation_snap"`
-	RemainEquationSnap   int    `json:"remain_equation_snap"`
-	AmmountTextSnap      int    `json:"ammount_text_snap"`
-	RemainTextSnap       int    `json:"remain_text_snap"`
+	UserID               string  `json:"user_id" gorm:"primaryKey"`
+	PurchasedTimestampMs int64   `json:"purchased_timestamp_ms"`
+	CreditAmmount        float64 `json:"credit_amount"`
 }
 
 type CreditUsageHistory struct {
 	*gorm.Model
 
-	UserID      string    `json:"user_id"`
-	Amount      float64   `json:"amount"`
-	Timestamp   time.Time `json:"timestamp"`
-	RequestType string    `json:"request_type"`
+	UserID       string    `json:"user_id"`
+	Amount       float64   `json:"amount"`
+	Timestamp    time.Time `json:"timestamp"`
+	RequestType  string    `json:"request_type"`
+	GenerationID string    `json:"generation_id"`
 }
 
 type UserTrialData struct {
@@ -33,4 +30,21 @@ type UserTrialData struct {
 	UserID             string `json:"user_id" gorm:"primaryKey"`
 	Email              string `json:"email"`
 	ExpiredTimestampMs int64  `json:"expired_timestamp_ms"`
+}
+
+type Receipt struct {
+	*gorm.Model
+
+	ID                     string  `json:"id" gorm:"primaryKey"`
+	ModelType              string  `json:"model"`
+	Streamed               bool    `json:"streamed"`
+	GenerationTime         float32 `json:"generation_time"`
+	CreatedAt              string  `json:"created_at"`
+	TokensPrompt           int64   `json:"tokens_prompt"`
+	TokensCompletion       int64   `json:"tokens_completion"`
+	NativeTokensPrompt     int64   `json:"native_tokens_prompt"`
+	NativeTokensCompletion int64   `json:"native_tokens_completion"`
+	NumMediaGenerations    int64   `json:"num_media_generations"`
+	Origin                 string  `json:"origin"`
+	Usage                  float64 `json:"usage"`
 }

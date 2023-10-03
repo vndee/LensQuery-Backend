@@ -20,23 +20,18 @@ func handleTestEvent(event *model.Event) {
 }
 
 func handleInitialPurchaseEvent(event *model.Event) (*model.UserCredits, error) {
-	var plan config.Plan
-	if event.Store == "APP_STORE" {
-		plan = config.AppStorePlanConfigs[event.ProductID]
-	} else if event.Store == "PLAY_STORE" {
-		plan = config.PlayStorePlanConfigs[event.ProductID]
-	} else {
-		return nil, fmt.Errorf("unknown store")
-	}
+	// var plan config.Plan
+	// if event.Store == "APP_STORE" {
+	// 	plan = config.AppStorePlanConfigs[event.ProductID]
+	// } else if event.Store == "PLAY_STORE" {
+	// 	plan = config.PlayStorePlanConfigs[event.ProductID]
+	// } else {
+	// 	return nil, fmt.Errorf("unknown store")
+	// }
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
 		PurchasedTimestampMs: event.PurchasedAtMs,
-		ExpiredTimestampMs:   event.ExpirationAtMs,
-		AmmountEquationSnap:  plan.EquationOCRSnap,
-		RemainEquationSnap:   plan.EquationOCRSnap,
-		AmmountTextSnap:      plan.TextOCRSnap,
-		RemainTextSnap:       plan.TextOCRSnap,
 	}
 
 	var response *gorm.DB
@@ -63,11 +58,6 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
 		PurchasedTimestampMs: event.PurchasedAtMs,
-		ExpiredTimestampMs:   event.ExpirationAtMs,
-		AmmountEquationSnap:  0,
-		RemainEquationSnap:   0,
-		AmmountTextSnap:      0,
-		RemainTextSnap:       0,
 	}
 
 	var response *gorm.DB
@@ -94,23 +84,18 @@ func handleExpirationEvent(event *model.Event) (*model.UserCredits, error) {
 }
 
 func handleRenewalEvent(event *model.Event) (*model.UserCredits, error) {
-	var plan config.Plan
-	if event.Store == "APP_STORE" {
-		plan = config.AppStorePlanConfigs[event.ProductID]
-	} else if event.Store == "PLAY_STORE" {
-		plan = config.PlayStorePlanConfigs[event.ProductID]
-	} else {
-		return nil, fmt.Errorf("unknown store")
-	}
+	// var plan config.Plan
+	// if event.Store == "APP_STORE" {
+	// 	plan = config.AppStorePlanConfigs[event.ProductID]
+	// } else if event.Store == "PLAY_STORE" {
+	// 	plan = config.PlayStorePlanConfigs[event.ProductID]
+	// } else {
+	// 	return nil, fmt.Errorf("unknown store")
+	// }
 
 	userCredits := model.UserCredits{
 		UserID:               event.AppUserID,
 		PurchasedTimestampMs: event.PurchasedAtMs,
-		ExpiredTimestampMs:   event.ExpirationAtMs,
-		AmmountEquationSnap:  plan.EquationOCRSnap,
-		RemainEquationSnap:   plan.EquationOCRSnap,
-		AmmountTextSnap:      plan.TextOCRSnap,
-		RemainTextSnap:       plan.TextOCRSnap,
 	}
 
 	var response *gorm.DB

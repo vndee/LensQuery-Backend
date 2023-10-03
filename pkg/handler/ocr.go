@@ -15,6 +15,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	gofiberfirebaseauth "github.com/sacsand/gofiber-firebaseauth"
+	"github.com/vndee/lensquery-backend/pkg/config"
 	"github.com/vndee/lensquery-backend/pkg/database"
 	"github.com/vndee/lensquery-backend/pkg/model"
 )
@@ -325,25 +326,18 @@ func checkAvailableSnapCredits(c *fiber.Ctx, snapType string) bool {
 		return false
 	}
 
-	if userCredits.ExpiredTimestampMs < time.Now().Unix() {
-		_ = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Updates(map[string]interface{}{
-			"expired_timestamp_ms":  userCredits.ExpiredTimestampMs,
-			"ammount_equation_snap": 0,
-			"remain_equation_snap":  0,
-			"ammount_text_snap":     0,
-			"remain_text_snap":      0,
-		})
-		return false
-	}
-
 	switch snapType {
 	case "equation":
-		return userCredits.RemainEquationSnap > 0
+		if userCredits.CreditAmmount < config.EquationTextSnapPrice {
+			return false
+		}
+
 	case "text":
-		return userCredits.RemainTextSnap > 0
-	default:
-		return false
+		if userCredits.CreditAmmount < config.FreeTextSnapPrice {
+			return false
+		}
 	}
+	return true
 }
 
 func doDecreaseSnapCredits(c *fiber.Ctx, snapType string) error {
@@ -357,25 +351,25 @@ func doDecreaseSnapCredits(c *fiber.Ctx, snapType string) error {
 
 	switch snapType {
 	case "equation":
-		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("remain_equation_snap", userCredits.RemainEquationSnap-1)
+		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("credit_amount", userCredits.CreditAmmount-config.EquationTextSnapPrice)
 		if err := database.ProcessDatabaseResponse(response); err != nil {
 			return err
 		}
 
-		return addDecreaseSnapCreditsHistory(c, snapType, 1)
+		return addDecreaseSnapCreditsHistory(c, snapType, config.EquationTextSnapPrice)
 	case "text":
-		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("remain_text_snap", userCredits.RemainTextSnap-1)
+		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("credit_amount", userCredits.CreditAmmount-config.FreeTextSnapPrice)
 		if err := database.ProcessDatabaseResponse(response); err != nil {
 			return err
 		}
 
-		return addDecreaseSnapCreditsHistory(c, snapType, 1)
+		return addDecreaseSnapCreditsHistory(c, snapType, config.FreeTextSnapPrice)
 	}
 
 	return nil
 }
 
-func addDecreaseSnapCreditsHistory(c *fiber.Ctx, snapType string, ammount int) error {
+func addDecreaseSnapCreditsHistory(c *fiber.Ctx, snapType string, ammount float64) error {
 	user := c.Locals("user").(gofiberfirebaseauth.User)
 
 	var creditHistory model.CreditUsageHistory = model.CreditUsageHistory{
