@@ -55,6 +55,7 @@ func CreateTables() {
 	Pool.AutoMigrate(&model.UserCredits{})
 	Pool.AutoMigrate(&model.CreditUsageHistory{})
 	Pool.AutoMigrate(&model.UserTrialData{})
+	Pool.AutoMigrate(&model.Receipt{})
 }
 
 func ProcessDatabaseResponse(response *gorm.DB) error {
