@@ -328,12 +328,12 @@ func checkAvailableSnapCredits(c *fiber.Ctx, snapType string) bool {
 
 	switch snapType {
 	case "equation":
-		if userCredits.CreditAmmount < config.EquationTextSnapPrice {
+		if userCredits.CreditAmount < config.EquationTextSnapPrice {
 			return false
 		}
 
 	case "text":
-		if userCredits.CreditAmmount < config.FreeTextSnapPrice {
+		if userCredits.CreditAmount < config.FreeTextSnapPrice {
 			return false
 		}
 	}
@@ -351,14 +351,14 @@ func doDecreaseSnapCredits(c *fiber.Ctx, snapType string) error {
 
 	switch snapType {
 	case "equation":
-		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("credit_amount", userCredits.CreditAmmount-config.EquationTextSnapPrice)
+		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("credit_amount", userCredits.CreditAmount-config.EquationTextSnapPrice)
 		if err := database.ProcessDatabaseResponse(response); err != nil {
 			return err
 		}
 
 		return addDecreaseSnapCreditsHistory(c, snapType, config.EquationTextSnapPrice)
 	case "text":
-		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("credit_amount", userCredits.CreditAmmount-config.FreeTextSnapPrice)
+		response := database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user.UserID).Update("credit_amount", userCredits.CreditAmount-config.FreeTextSnapPrice)
 		if err := database.ProcessDatabaseResponse(response); err != nil {
 			return err
 		}

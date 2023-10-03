@@ -18,7 +18,7 @@ const (
 	TrialPeriod              = 7 * 24 * time.Hour
 	TrialFreeTextSnapCredits = 30
 	TrialFreeEquationCredits = 20
-	TrialCreditAmmount       = 0.1
+	TrialCreditAmount        = 0.1
 
 	// Open Router
 	OpenRouterEndpoint = "https://openrouter.ai/api/v1"

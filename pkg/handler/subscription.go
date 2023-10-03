@@ -29,11 +29,11 @@ func handleNonRenewingPurchase(event *model.Event) (*model.UserCredits, error) {
 		response = database.Pool.Create(&model.UserCredits{
 			UserID:               event.AppUserID,
 			PurchasedTimestampMs: event.PurchasedAtMs,
-			CreditAmmount:        float64(addedAmount),
+			CreditAmount:         float64(addedAmount),
 		})
 	} else {
 		response = database.Pool.Model(&userCredits).Where("user_id = ?", event.AppUserID).Updates(map[string]interface{}{
-			"credit_ammount": userCredits.CreditAmmount + float64(addedAmount),
+			"credit_amount": userCredits.CreditAmount + float64(addedAmount),
 		})
 	}
 

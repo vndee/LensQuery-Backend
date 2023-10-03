@@ -274,7 +274,7 @@ func ActivateUserTrial(c *fiber.Ctx) error {
 	credits := model.UserCredits{
 		UserID:               params.UserId,
 		PurchasedTimestampMs: trialData.CreatedAt.Unix(),
-		CreditAmmount:        config.TrialCreditAmmount,
+		CreditAmount:         config.TrialCreditAmount,
 	}
 
 	err = database.Pool.Create(&credits).Error

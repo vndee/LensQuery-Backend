@@ -55,6 +55,8 @@ func Completion(c *fiber.Ctx) error {
 		})
 	}
 
+	user := c.Locals("user").(gofiberfirebaseauth.User)
+
 	var requestBody *openai.ChatCompletionRequest
 	if err := c.BodyParser(&requestBody); err != nil {
 		log.Println("BodyParser:", err)
@@ -88,8 +90,8 @@ func Completion(c *fiber.Ctx) error {
 				if err != nil {
 					fmt.Printf("Error while flushing: %v. Closing http connection.\n", err)
 				}
-				log.Println("Checkpoint 1")
-				err := decreaseUserCredit(c, requestID)
+				log.Println("Checkpoint 1", requestID)
+				err := decreaseUserCredit(user.UserID, requestID)
 				if err != nil {
 					fmt.Printf("Error while decreasing user credit: %v. Closing http connection.\n", err)
 				}
@@ -99,8 +101,6 @@ func Completion(c *fiber.Ctx) error {
 			}
 
 			requestID = response.ID
-
-			log.Println("Response ID:", response.ID, response.Choices)
 			fmt.Fprintf(w, "data: %s\n\n", response.Choices[0].Delta.Content)
 
 			err = w.Flush()
@@ -110,7 +110,7 @@ func Completion(c *fiber.Ctx) error {
 				// dead connections must be closed here.
 				fmt.Printf("Error while flushing: %v. Closing http connection.\n", err)
 
-				err := doDecreaseSnapCredits(c, requestID)
+				err := decreaseUserCredit(user.UserID, requestID)
 				if err != nil {
 					fmt.Printf("Error while decreasing user credit: %v. Closing http connection.\n", err)
 				}
@@ -125,7 +125,6 @@ func Completion(c *fiber.Ctx) error {
 
 func checkAvailableCredit(c *fiber.Ctx) bool {
 	user := c.Locals("user").(gofiberfirebaseauth.User)
-
 	var response *gorm.DB
 	var userCredits model.UserCredits
 	response = database.Pool.Where("user_id = ?", user.UserID).First(&userCredits)
@@ -133,16 +132,14 @@ func checkAvailableCredit(c *fiber.Ctx) bool {
 		return false
 	}
 
-	if userCredits.CreditAmmount <= config.MinPrice {
+	if userCredits.CreditAmount <= config.MinPrice {
 		return false
 	}
 
 	return true
 }
 
-func decreaseUserCredit(c *fiber.Ctx, requestID string) error {
-	user := c.Locals("user").(gofiberfirebaseauth.User)
-
+func decreaseUserCredit(userID string, requestID string) error {
 	url := fmt.Sprintf("%s/generation?id=%s", config.OpenRouterEndpoint, requestID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -164,25 +161,9 @@ func decreaseUserCredit(c *fiber.Ctx, requestID string) error {
 		return err
 	}
 
-	var responseData map[string]interface{}
-	err = sonic.Unmarshal(responseBody, &responseData)
+	chatHistory, err := parseChatHistory(responseBody)
 	if err != nil {
 		return err
-	}
-
-	chatHistory := model.Receipt{
-		ID:                     responseData["id"].(string),
-		ModelType:              responseData["model"].(string),
-		Streamed:               responseData["streamed"].(bool),
-		GenerationTime:         responseData["generation_time"].(float32),
-		CreatedAt:              responseData["created_at"].(string),
-		TokensPrompt:           responseData["tokens_prompt"].(int64),
-		TokensCompletion:       responseData["tokens_completion"].(int64),
-		NativeTokensPrompt:     responseData["native_tokens_prompt"].(int64),
-		NativeTokensCompletion: responseData["native_tokens_completion"].(int64),
-		NumMediaGenerations:    responseData["num_media_generations"].(int64),
-		Origin:                 responseData["origin"].(string),
-		Usage:                  responseData["usage"].(float64),
 	}
 
 	if chatHistory.Usage <= 0 {
@@ -193,12 +174,14 @@ func decreaseUserCredit(c *fiber.Ctx, requestID string) error {
 
 	var response *gorm.DB
 	var userCredits model.UserCredits
-	response = database.Pool.Where("user_id = ?", user.UserID).First(&userCredits)
+	response = database.Pool.Where("user_id = ?", userID).First(&userCredits)
 	if err := database.ProcessDatabaseResponse(response); err != nil {
 		return err
 	}
 
-	response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", user).Update("credit_amount", userCredits.CreditAmmount-chatHistory.Usage)
+	response = database.Pool.Model(&model.UserCredits{}).Where("user_id = ?", userID).Updates(map[string]interface{}{
+		"credit_amount": userCredits.CreditAmount - chatHistory.Usage,
+	})
 	if err := database.ProcessDatabaseResponse(response); err != nil {
 		return err
 	}
@@ -210,4 +193,10 @@ func decreaseUserCredit(c *fiber.Ctx, requestID string) error {
 	}
 
 	return database.ProcessDatabaseResponse(response)
+}
+
+func parseChatHistory(responseBody []byte) (*model.Receipt, error) {
+	parsedObject := &model.ReceiptResponse{}
+	err := sonic.Unmarshal(responseBody, parsedObject)
+	return &parsedObject.Data, err
 }

@@ -11,7 +11,7 @@ type UserCredits struct {
 
 	UserID               string  `json:"user_id" gorm:"primaryKey"`
 	PurchasedTimestampMs int64   `json:"purchased_timestamp_ms"`
-	CreditAmmount        float64 `json:"credit_amount"`
+	CreditAmount         float64 `json:"credit_amount"`
 }
 
 type CreditUsageHistory struct {
@@ -38,13 +38,17 @@ type Receipt struct {
 	ID                     string  `json:"id" gorm:"primaryKey"`
 	ModelType              string  `json:"model"`
 	Streamed               bool    `json:"streamed"`
-	GenerationTime         float32 `json:"generation_time"`
+	GenerationTime         float64 `json:"generation_time"`
 	CreatedAt              string  `json:"created_at"`
-	TokensPrompt           int64   `json:"tokens_prompt"`
-	TokensCompletion       int64   `json:"tokens_completion"`
-	NativeTokensPrompt     int64   `json:"native_tokens_prompt"`
-	NativeTokensCompletion int64   `json:"native_tokens_completion"`
-	NumMediaGenerations    int64   `json:"num_media_generations"`
+	TokensPrompt           float64 `json:"tokens_prompt"`
+	TokensCompletion       float64 `json:"tokens_completion"`
+	NativeTokensPrompt     float64 `json:"native_tokens_prompt"`
+	NativeTokensCompletion float64 `json:"native_tokens_completion"`
+	NumMediaGenerations    float64 `json:"num_media_generations"`
 	Origin                 string  `json:"origin"`
 	Usage                  float64 `json:"usage"`
+}
+
+type ReceiptResponse struct {
+	Data Receipt `json:"data"`
 }
