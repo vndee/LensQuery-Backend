@@ -80,6 +80,7 @@ func Setup() *fiber.App {
 			"POST::/api/v1/account/reset_password",
 			"POST::/api/v1/account/verify_code",
 			"POST::/api/v1/account/update_password",
+			"GET::/api/v1/chat/models",
 			// "POST::/api/v1/chat/completions",
 		}}))
 
