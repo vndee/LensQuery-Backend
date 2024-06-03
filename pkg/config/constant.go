@@ -22,7 +22,7 @@ const (
 
 	// Open Router
 	OpenRouterEndpoint = "https://openrouter.ai/api/v1"
-	OpenRouterAPIKey   = "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"
+	OpenRouterAPIKey   = "no-key"
 
 	// Pricing
 	PriceAdjustFactor     = 1.1
